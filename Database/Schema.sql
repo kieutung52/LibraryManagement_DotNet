@@ -19,6 +19,7 @@ CREATE TABLE Categories (
 -- =============================================
 CREATE TABLE Books (
     BookID INT AUTO_INCREMENT PRIMARY KEY,
+    IBNS NVARCHAR(100) NOT NULL UNIQUE,
     Title NVARCHAR(255) NOT NULL,
     Author NVARCHAR(255) NOT NULL,
     CategoryID INT,
@@ -27,24 +28,69 @@ CREATE TABLE Books (
     AvailableQuantity INT NOT NULL CHECK (AvailableQuantity >= 0),
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    BorrowedCount INT NOT NULL DEFAULT 0,
 
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID) ON DELETE SET NULL
+);
+
+-- =============================================
+-- Table: ShelfLocations
+-- Description: Stores information about shelf locations in the library.
+-- =============================================
+CREATE TABLE Shelf (
+    ShelfID INT AUTO_INCREMENT PRIMARY KEY,
+    LocationName NVARCHAR(100) NOT NULL UNIQUE,
+    Description TEXT NULL,
+    Status ENUM("EMPTY","OCCUPIED","FULL") NOT NULL DEFAULT "EMPTY",
+    Capacity INT NOT NULL DEFAULT 0,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- Table: BookLocations
+-- Description: Maps books to their shelf locations and tracks quantities at each location.
+-- =============================================
+CREATE TABLE BookLocation (
+    BookLocationID INT AUTO_INCREMENT PRIMARY KEY,
+    BookID INT NOT NULL,
+    ShelfLocationID INT NOT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (BookID) REFERENCES Books(BookID) ON DELETE CASCADE,
+    FOREIGN KEY (ShelfLocationID) REFERENCES ShelfLocations(ShelfLocationID) ON DELETE CASCADE
 );
 
 -- =============================================
 -- Table: Accounts
 -- Description: Stores user and admin account information.
 -- =============================================
+-- Using single table with 3 table: Account, User, Admin as Column 'Role' modelBuilder.Entity<Account>().HasDiscriminator<string>("Role").HasValue<User>("USER").HasValue<Admin>("ADMIN");
 CREATE TABLE Accounts (
     AccountID INT AUTO_INCREMENT PRIMARY KEY,
+    
+    -- Discriminator Column (Cột phân biệt)
+    Role VARCHAR(10) NOT NULL, -- EF Core sẽ dùng cột này để biết là 'USER' hay 'ADMIN'
+
+    -- Common Columns (Các cột chung)
     FullName NVARCHAR(100) NOT NULL,
     Email VARCHAR(100) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
-    Role ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER',
     Status ENUM('ACTIVE', 'SUSPENDED', 'BANNED') NOT NULL DEFAULT 'ACTIVE',
-    EmployeeID VARCHAR(20) NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    -- User-Specific Columns (Các cột của User, sẽ NULL nếu là Admin)
+    LimitRenew INT NULL,
+    CountRenew INT NULL,
+    LimitBorrow INT NULL,
+    CountBorrow INT NULL,
+    CountViolations INT NULL,
+
+    -- Admin-Specific Columns (Các cột của Admin, sẽ NULL nếu là User)
+    EmployeeID VARCHAR(20) NULL,
+    Position ENUM("LIBRARIAN", "DIRECTOR") NULL
 );
 
 -- =============================================
@@ -56,7 +102,7 @@ CREATE TABLE Borrowings (
     AccountID INT NOT NULL,
     BorrowDate DATE NOT NULL,
     Status ENUM('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED') NOT NULL DEFAULT 'PENDING',
-    AdminID INT NULL,
+    StaffID INT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE,
@@ -71,6 +117,7 @@ CREATE TABLE BorrowingDetails (
     BorrowingDetailID INT AUTO_INCREMENT PRIMARY KEY,
     BorrowingID INT NOT NULL,
     BookID INT NOT NULL,
+    QuantityBook INT NOT NULL CHECK (Quantity > 0),
     DueDate DATE NOT NULL,
     ReturnDate DATE NULL,
     Status ENUM('BORROWING', 'RETURNED', 'OVERDUE', 'LOST') NOT NULL DEFAULT 'BORROWING',
@@ -80,15 +127,18 @@ CREATE TABLE BorrowingDetails (
 );
 
 -- =============================================
--- Seeding initial data
+-- Table: DataAnalytics
+-- Description: Placeholder for future data analytics features.
 -- =============================================
-
-INSERT INTO Categories (Name, Description) VALUES
-('Science Fiction', 'Books that explore futuristic concepts and advanced technology.'),
-('Fantasy', 'Books that contain magical or supernatural elements.'),
-('Non-Fiction', 'Informative books based on facts and real events.');
-
-INSERT INTO Books (Title, Author, CategoryID, PublicationYear, TotalQuantity, AvailableQuantity) VALUES
-('Dune', 'Frank Herbert', 1, 1965, 10, 10),
-('The Hobbit', 'J.R.R. Tolkien', 2, 1937, 5, 5),
-('Sapiens: A Brief History of Humankind', 'Yuval Noah Harari', 3, 2011, 8, 8);
+CREATE TABLE DataAnalyticsWeekly (
+    DataAnalyticsID INT AUTO_INCREMENT PRIMARY KEY,
+    ReportDate DATE NOT NULL,
+    CountBorrowings INT NOT NULL DEFAULT 0,
+    CountUsersVisolations INT NOT NULL DEFAULT 0, -- dem so nguoi dung vi pham quy dinh
+    CountUsersVisted INT NOT NULL DEFAULT 0, -- dem so nguoi dung truy cap he thong
+    CountUserBack INT NOT NULL DEFAULT 0, -- dem so nguoi dung da dang ki tai khoan va login(Quay lai su dung)
+    CountBorrowingsToExpire INT NOT NULL DEFAULT 0, -- dem so luong sach sap het han tra
+    CountBorrowingsRequestPending INT NOT NULL DEFAULT 0, -- dem so luong phieu muon dang cho duyet
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
