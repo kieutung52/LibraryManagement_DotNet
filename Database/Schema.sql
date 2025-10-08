@@ -19,7 +19,7 @@ CREATE TABLE Categories (
 -- =============================================
 CREATE TABLE Books (
     BookID INT AUTO_INCREMENT PRIMARY KEY,
-    IBNS NVARCHAR(100) NOT NULL UNIQUE,
+    ISBN NVARCHAR(100) NOT NULL UNIQUE,
     Title NVARCHAR(255) NOT NULL,
     Author NVARCHAR(255) NOT NULL,
     CategoryID INT,
@@ -89,7 +89,7 @@ CREATE TABLE Accounts (
     CountViolations INT NULL,
 
     -- Admin-Specific Columns (Các cột của Admin, sẽ NULL nếu là User)
-    EmployeeID VARCHAR(20) NULL,
+    StaffID VARCHAR(255) NULL,
     Position ENUM("LIBRARIAN", "DIRECTOR") NULL
 );
 
@@ -102,11 +102,11 @@ CREATE TABLE Borrowings (
     AccountID INT NOT NULL,
     BorrowDate DATE NOT NULL,
     Status ENUM('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED') NOT NULL DEFAULT 'PENDING',
-    StaffID INT NULL,
+    StaffID VARCHAR(255) NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (AccountID) REFERENCES Accounts(AccountID) ON DELETE CASCADE,
-    FOREIGN KEY (AdminID) REFERENCES Accounts(AccountID) ON DELETE SET NULL
+    FOREIGN KEY (StaffID) REFERENCES Accounts(AccountID) ON DELETE SET NULL
 );
 
 -- =============================================
@@ -130,7 +130,7 @@ CREATE TABLE BorrowingDetails (
 -- Table: DataAnalytics
 -- Description: Placeholder for future data analytics features.
 -- =============================================
-CREATE TABLE DataAnalyticsWeekly (
+CREATE TABLE DataAnalyticsDaily (
     DataAnalyticsID INT AUTO_INCREMENT PRIMARY KEY,
     ReportDate DATE NOT NULL,
     CountBorrowings INT NOT NULL DEFAULT 0,
