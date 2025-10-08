@@ -3,6 +3,8 @@ using LibraryMangement.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+namespace LibraryMangement.Data;
+
 public class LibraryContext : DbContext
 {
     public DbSet<Account> Accounts { get; set; }
@@ -40,9 +42,7 @@ public class LibraryContext : DbContext
              .HasMaxLength(20)
              .HasDefaultValue(AccountStatus.ACTIVE);
 
-            // timestamps default CURRENT_TIMESTAMP for MySQL
-            b.Property(a => a.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            b.Property(a => a.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            b.Property(a => a.CreatedAt).HasDefaultValueSql("now()");
 
             b.HasDiscriminator<string>("Role")
                 .HasValue<User>("USER")
@@ -71,8 +71,7 @@ public class LibraryContext : DbContext
             b.HasKey(c => c.CategoryID);
             b.Property(c => c.Name).HasMaxLength(100).IsRequired();
             b.HasIndex(c => c.Name).IsUnique();
-            b.Property(c => c.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            b.Property(c => c.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            b.Property(c => c.CreatedAt).HasDefaultValueSql("now()");
         });
 
         // --- Book ---
@@ -90,8 +89,7 @@ public class LibraryContext : DbContext
              .HasForeignKey(x => x.CategoryID)
              .OnDelete(DeleteBehavior.SetNull);
 
-            b.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            b.Property(x => x.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            b.Property(x => x.CreatedAt).HasDefaultValueSql("now()");
         });
 
         // --- Shelf ---
@@ -105,8 +103,7 @@ public class LibraryContext : DbContext
              .HasConversion<string>()
              .HasMaxLength(20)
              .HasDefaultValue(ShelfStatus.EMPTY);
-            b.Property(s => s.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            b.Property(s => s.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            b.Property(s => s.CreatedAt).HasDefaultValueSql("now()");
         });
 
         // --- BookLocation ---
@@ -124,8 +121,7 @@ public class LibraryContext : DbContext
              .HasForeignKey(bl => bl.ShelfID)
              .OnDelete(DeleteBehavior.Cascade);
 
-            b.Property(bl => bl.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            b.Property(bl => bl.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            b.Property(bl => bl.CreatedAt).HasDefaultValueSql("now()");
         });
 
         // --- Borrowing ---
@@ -148,7 +144,7 @@ public class LibraryContext : DbContext
             b.Property(x => x.Status)
              .HasConversion<string>()
              .HasDefaultValue(BorrowingStatus.PENDING);
-            b.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            b.Property(x => x.CreatedAt).HasDefaultValueSql("now()");
         });
 
         // --- BorrowingDetail ---
@@ -178,8 +174,7 @@ public class LibraryContext : DbContext
             b.ToTable("DataAnalyticsDaily");
             b.HasKey(x => x.DataAnalyticsID);
             b.Property(x => x.ReportDate).IsRequired();
-            b.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            b.Property(x => x.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+            b.Property(x => x.CreatedAt).HasDefaultValueSql("now()");
         });
     }
 
