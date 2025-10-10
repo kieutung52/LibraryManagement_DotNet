@@ -6,7 +6,7 @@ namespace LibraryMangement.Models;
 public abstract class Account : BaseEntity
 {
     [Key]
-    public int AccountID { get; set; }
+    public Guid AccountID { get; set; }
     public string Role { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;

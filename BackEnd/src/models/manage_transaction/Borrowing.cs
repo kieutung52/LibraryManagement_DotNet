@@ -9,10 +9,10 @@ public class Borrowing : BaseEntity
     [Key]
     public int BorrowingID { get; set; }
 
-    public int AccountID { get; set; }
+    public Guid AccountID { get; set; }
     public Account Account { get; set; } = null!; // borrower
 
-    public int? StaffID { get; set; }
+    public Guid? StaffID { get; set; }
     public Admin? Staff { get; set; }
 
     public DateTime BorrowDate { get; set; }

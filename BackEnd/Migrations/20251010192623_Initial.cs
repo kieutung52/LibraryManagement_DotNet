@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEnd.Migrations
 {
     /// <inheritdoc />
-    public partial class initTables : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,14 +16,13 @@ namespace BackEnd.Migrations
                 name: "Accounts",
                 columns: table => new
                 {
-                    AccountID = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    AccountID = table.Column<Guid>(type: "uuid", nullable: false),
                     Role = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Password = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     FullName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "ACTIVE"),
-                    StaffCode = table.Column<int>(type: "integer", maxLength: 255, nullable: true),
+                    StaffCode = table.Column<Guid>(type: "uuid", maxLength: 255, nullable: true),
                     Position = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     LimitRenew = table.Column<int>(type: "integer", nullable: true),
                     CountRenew = table.Column<int>(type: "integer", nullable: true),
@@ -99,8 +98,8 @@ namespace BackEnd.Migrations
                 {
                     BorrowingID = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AccountID = table.Column<int>(type: "integer", nullable: false),
-                    StaffID = table.Column<int>(type: "integer", nullable: true),
+                    AccountID = table.Column<Guid>(type: "uuid", nullable: false),
+                    StaffID = table.Column<Guid>(type: "uuid", nullable: true),
                     BorrowDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "PENDING"),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),

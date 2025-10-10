@@ -1,7 +1,6 @@
 using LibraryMangement.EnumData;
 using LibraryMangement.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace LibraryMangement.Data;
 
@@ -54,7 +53,6 @@ public class LibraryContext : DbContext
         {
             b.Property(a => a.StaffCode).HasMaxLength(255);
             b.HasIndex(a => a.StaffCode).IsUnique();
-            b.HasAlternateKey(a => a.StaffCode);
             b.Property(a => a.Position)
              .HasConversion<string>()
              .HasMaxLength(20);
@@ -135,10 +133,9 @@ public class LibraryContext : DbContext
              .HasForeignKey(x => x.AccountID)
              .OnDelete(DeleteBehavior.Cascade);
 
-            b.HasOne(x => x.Admin)
+            b.HasOne(x => x.Staff)
              .WithMany()
              .HasForeignKey(x => x.StaffID)
-             .HasPrincipalKey(nameof(Admin.StaffCode))
              .OnDelete(DeleteBehavior.SetNull);
 
             b.Property(x => x.Status)

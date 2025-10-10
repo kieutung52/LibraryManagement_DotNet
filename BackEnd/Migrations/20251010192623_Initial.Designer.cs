@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEnd.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20251008182732_initTables")]
-    partial class initTables
+    [Migration("20251010192623_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,9 @@ namespace BackEnd.Migrations
 
             modelBuilder.Entity("LibraryMangement.Models.Account", b =>
                 {
-                    b.Property<int>("AccountID")
+                    b.Property<Guid>("AccountID")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("AccountID"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -175,8 +173,8 @@ namespace BackEnd.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("BorrowingID"));
 
-                    b.Property<int>("AccountID")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AccountID")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("BorrowDate")
                         .HasColumnType("timestamp with time zone");
@@ -186,8 +184,8 @@ namespace BackEnd.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<int?>("StaffID")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("StaffID")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -375,9 +373,9 @@ namespace BackEnd.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int?>("StaffCode")
+                    b.Property<Guid?>("StaffCode")
                         .HasMaxLength(255)
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
                     b.HasIndex("StaffCode")
                         .IsUnique();
