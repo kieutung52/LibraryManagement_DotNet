@@ -12,8 +12,8 @@ public class Borrowing : BaseEntity
     public int AccountID { get; set; }
     public Account Account { get; set; } = null!; // borrower
 
-    public string? StaffID { get; set; }
-    public Admin? Admin { get; set; }
+    public int? StaffID { get; set; }
+    public Admin? Staff { get; set; }
 
     public DateTime BorrowDate { get; set; }
     public BorrowingStatus Status { get; set; } = BorrowingStatus.PENDING;
