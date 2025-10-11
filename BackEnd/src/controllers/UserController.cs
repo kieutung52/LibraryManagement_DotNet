@@ -70,7 +70,7 @@ public class UserController : ControllerBase
         return Ok(ApiResponse<UserResponse>.SuccessResponse(user));
     }
 
-    [HttpGet("myprofile")]
+    [HttpGet("my-profile")]
     [Authorize]
     public async Task<IActionResult> MyProfile()
     {
@@ -95,6 +95,7 @@ public class UserController : ControllerBase
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> CreateUser(CreateUserRequest model)
     {
+        
         var newUser = await _userService.CreateUserAsync(model);
         if(newUser == null) return BadRequest(ApiResponse<string>.ErrorResponse("Email đã tồn tại."));
         
@@ -105,6 +106,16 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateUser(Guid id, UpdateUserRequest model)
     {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
+        {
+            return Unauthorized();
+        }
+
+        if (currentUserId != id && !User.IsInRole("ADMIN"))
+        {
+            return Forbid();
+        }
         BooleanResponse success = await _userService.UpdateUserAsync(id, model);
         if(!success.is_successed) return NotFound(ApiResponse<BooleanResponse>.ErrorResponse("Không tìm thấy người dùng."));
         
