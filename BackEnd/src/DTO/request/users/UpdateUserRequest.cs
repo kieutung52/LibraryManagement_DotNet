@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LibraryMangement.EnumData;
 
 namespace LibraryMangement.Request;
 public class UpdateUserRequest
@@ -7,6 +8,5 @@ public class UpdateUserRequest
     public string FullName { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty; 
-    // Thêm các trường khác cần cập nhật
+    public AccountStatus? Status { get; set; } 
 }
