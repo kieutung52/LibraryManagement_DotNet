@@ -1,0 +1,35 @@
+/* Giữ phong cách tối giản giống file gốc */
+body {
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+}
+
+/* Spinner nhỏ gọn cho nút và AI modal */
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #000;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal nội dung cuộn mượt */
+.modal-content-scrollable {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Khung layout chung */
+.app-container {
+  min-height: 100dvh;
+  background-color: #f9fafb; /* gray-50 */
+}
+.content {
+  max-width: 80rem; /* 1280px */
+  margin: 0 auto;
+  padding: 1rem;
+}
