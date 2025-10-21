@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { borrowingsService } from '../services/borrowings'
-import { Borrowing } from '../types/borrowing'
-import { useAuth } from '../store/auth'
+import { borrowingsService } from '@/server/borrowing'
+import { Borrowing } from '@/types/borrowing'
+import { useAuth } from '@/store/auth'
 
 function Badge({ status }: { status: Borrowing['status'] }) {
   const map: Record<Borrowing['status'], string> = {

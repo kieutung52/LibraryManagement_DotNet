@@ -1,5 +1,5 @@
-import { http } from './http'
-import { Shelf } from '../types/shelf'
+import { http } from '@/server/http'
+import { Shelf } from '@/types/shelf'
 
 const KEY = 'shelves'
 

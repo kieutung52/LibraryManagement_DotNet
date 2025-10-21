@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { adminService } from '../services/admin'
+import { adminService } from '@/server/admin'
 
 export default function AdminAnalytics() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)

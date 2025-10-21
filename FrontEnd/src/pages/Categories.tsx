@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { categoriesService } from '../services/categories'
-import { Category } from '../types/category'
+import { categoriesService } from '@/server/categories'
+import { Category } from '@/types/category'
 
 export default function Categories() {
   const [items, setItems] = useState<Category[]>([])

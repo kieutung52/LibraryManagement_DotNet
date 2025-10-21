@@ -1,15 +1,15 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Navbar from './components/Navbar'
+import Navbar from '@/components/Navbar'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Books from './pages/Books'
 import Borrowings from './pages/Borrowings'
-import Categories from './pages/Categories'
-import MyBorrowings from './pages/MyBorrowings'
-import AdminAnalytics from './pages/AdminAnalytics'
-import ProtectedRoute from './components/ProtectedRoute'
-import AdminRoute from './components/AdminRoute'
+import Categories from '@/pages/Categories'
+import MyBorrowings from '@/pages/MyBorrowings'
+import AdminAnalytics from '@/pages/AdminAnalytics'
+import ProtectedRoute from '@/components/ProtectedRoute'
+import AdminRoute from '@/components/AdminRoute'
 
 function App() {
   return (

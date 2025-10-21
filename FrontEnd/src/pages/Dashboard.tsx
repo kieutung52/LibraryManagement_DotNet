@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../store/auth'
+import { useAuth } from '@/store/auth'
 
 function StatCard({ number, label, description }: { number: string; label: string; description?: string }) {
   return (

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { borrowingsService } from '../services/borrowings'
-import { Borrowing } from '../types/borrowing'
-import DataTable from '../components/DataTable'
+import { borrowingsService } from '@/server/borrowing'
+import { Borrowing } from '@/types/borrowing'
+import DataTable from '@/components/DataTable'
 
 export default function Borrowings() {
   const [rows, setRows] = useState<Borrowing[]>([])

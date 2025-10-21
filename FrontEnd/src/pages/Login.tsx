@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { useAuth } from '../store/auth'
+import { useAuth } from '@/store/auth'
 
 export default function Login() {
   const navigate = useNavigate()

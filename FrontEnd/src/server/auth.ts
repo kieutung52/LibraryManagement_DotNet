@@ -1,5 +1,5 @@
-import { http } from './http'
-import { User } from '../types/user'
+import { http } from '@/server/http'
+import { User } from '@/types/user'
 
 type RegisterDto = { name: string; email: string; password: string }
 type StoredUser = User & { password?: string }
@@ -31,7 +31,7 @@ export const authService = {
     users.push(newUser)
     await http.set(USERS_KEY, users)
     // không tự đăng nhập — để người dùng vào trang login
-    return { ...newUser, password: undefined }
+    return { ...newUser} // fix here **************
   },
 
   async login(email: string, password: string): Promise<User> {

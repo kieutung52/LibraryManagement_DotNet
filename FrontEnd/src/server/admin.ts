@@ -1,6 +1,6 @@
-import { booksService } from './books'
-import { borrowingsService } from './borrowings'
-import { http } from './http'
+import { booksService } from '@/server/books'
+import { borrowingsService } from '@/server/borrowing'
+import { http } from '@/server/http'
 
 export const adminService = {
   async getKpi() {

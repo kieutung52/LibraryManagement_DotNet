@@ -1,5 +1,5 @@
-import { http } from './http'
-import { Book } from '../types/book'
+import { http } from '@/server/http'
+import { Book } from '@/types/book'
 
 const KEY = 'books'
 

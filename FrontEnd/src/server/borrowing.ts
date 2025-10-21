@@ -1,5 +1,5 @@
-import { http } from './http'
-import { Borrowing, BorrowStatus } from '../types/borrowing'
+import { http } from '@/server/http'
+import { Borrowing, BorrowStatus } from '@/types/borrowing'
 
 const KEY = 'borrowings'
 

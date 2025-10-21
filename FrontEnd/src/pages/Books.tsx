@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { booksService } from '../services/books'
-import { categoriesService } from '../services/categories'
-import { Book } from '../types/book'
+import { booksService } from '@/server/books'
+import { categoriesService } from '@/server/categories'
+import { Book } from '@/types/book'
 
 function BookDetailModal({ book, onClose }: { book: Book; onClose: () => void }) {
   return (

@@ -1,5 +1,5 @@
-import { http } from './http'
-import { Category } from '../types/category'
+import { http } from '@/server/http'
+import { Category } from '@/types/category'
 
 const KEY = 'categories'
 

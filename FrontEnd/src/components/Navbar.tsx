@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../store/auth'
+import { useAuth } from '@/store/auth'
 
 function NavItem({ to, children }: { to: string; children: React.ReactNode }) {
   return (
