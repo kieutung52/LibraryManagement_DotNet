@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { borrowingsService } from '@/server/borrowing'
-import { Borrowing } from '@/types/borrowing'
-import DataTable from '@/components/DataTable'
+import { borrowingsService } from '../services/borrowing'
+import { Borrowing } from '../types/borrowing'
+import DataTable from '../components/DataTable'
 
 export default function Borrowings() {
   const [rows, setRows] = useState<Borrowing[]>([])
@@ -27,6 +27,14 @@ export default function Borrowings() {
     load()
   }
 
+  const statusClasses  = {
+    'Chờ duyệt': 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+    'Đã duyệt': 'bg-blue-100 text-blue-600 border border-blue-300',
+    'Đã trả': 'bg-green-100 text-green-600 border border-green-300',
+    'Quá hạn': 'bg-red-100 text-red-600 border border-red-300',
+    'Đã hủy': 'bg-gray-100 text-gray-600 border border-gray-300'
+  } as const
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-8">
       <div className="text-center">
@@ -45,6 +53,7 @@ export default function Borrowings() {
           <option value="Đã duyệt">Đã duyệt</option>
           <option value="Đã trả">Đã trả</option>
           <option value="Quá hạn">Quá hạn</option>
+          <option value="Đã hủy">Đã hủy</option>
         </select>
       </div>
 
@@ -60,7 +69,21 @@ export default function Borrowings() {
             { key: 'code', header: 'Mã sách' },
             { key: 'borrowDate', header: 'Ngày mượn' },
             { key: 'dueDate', header: 'Hạn trả' },
-            { key: 'status', header: 'Trạng thái' },
+            {
+              key: 'status',
+              header: 'Trạng thái',
+              render: (r) => (
+                <div className="min-w-[96px]"> {/* giữ bề rộng tối thiểu để không wrap */}
+                  <span
+                    className={`inline-flex items-center justify-center h-7 px-3
+                                text-xs font-semibold rounded-full whitespace-nowrap align-middle
+                                ${statusClasses[r.status] || 'bg-gray-100 text-gray-700 border border-gray-200'}`}
+                  >
+                    {r.status}
+                  </span>
+                </div>
+              )
+            },
             {
               key: 'actions',
               header: 'Thao tác',
