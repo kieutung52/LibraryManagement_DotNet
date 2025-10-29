@@ -1,4 +1,3 @@
-// File: src/services/UserService.cs
 using AutoMapper;
 using LibraryMangement.Data;
 using LibraryMangement.Request;
@@ -31,7 +30,7 @@ public class UserService : IUserService
         var user = await _context.Accounts.FirstOrDefaultAsync(u => u.Email == model.Email);
         if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
         {
-            return null; // Sai email hoặc mật khẩu
+            return null; 
         }
 
         var token = GenerateJwtToken(user);
@@ -44,12 +43,12 @@ public class UserService : IUserService
     {
         if (await _context.Users.AnyAsync(u => u.Email == model.Email))
         {
-            return null; // Email đã tồn tại
+            return null; 
         }
 
         var user = _mapper.Map<User>(model);
         user.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
-        user.Role = "USER"; // Gán role mặc định
+        user.Role = "USER"; 
         user.AccountID = Guid.NewGuid();
 
         _context.Users.Add(user);
@@ -65,12 +64,12 @@ public class UserService : IUserService
     {
         if (await _context.Admins.AnyAsync(u => u.Email == model.Email))
         {
-            return null; // Email đã tồn tại
+            return null; 
         }
 
         var Admin = _mapper.Map<Admin>(model);
         Admin.Password = BCrypt.Net.BCrypt.HashPassword(model.Password);
-        Admin.Role = "ADMIN"; // Gán role mặc định
+        Admin.Role = "ADMIN"; 
         Admin.AccountID = Guid.NewGuid();
 
         Admin.StaffCode = Guid.NewGuid();
@@ -106,7 +105,7 @@ public class UserService : IUserService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
-    // Implement CRUD methods
+    
     public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
     {
         var users = await _context.Accounts.ToListAsync();
@@ -140,7 +139,7 @@ public class UserService : IUserService
         var user = await _context.Accounts.FindAsync(id);
         if(user == null) return new BooleanResponse(false);
 
-        _mapper.Map(model, user); // Update fields from model to user
+        _mapper.Map(model, user); 
         _context.Accounts.Update(user);
         await _context.SaveChangesAsync();
         return new BooleanResponse(true);
