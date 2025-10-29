@@ -5,6 +5,7 @@ using LibraryMangement.Models;
 using LibraryMangement.Request;
 using LibraryMangement.Response;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace LibraryMangement.Service;
 
@@ -22,10 +23,13 @@ public class BorrowingService : IBorrowingService
     public async Task<BorrowingResponse> CreateBorrowingRequestAsync(CreateBorrowingRequest request)
     {
         // Check if account exists
-        var account = await _context.Accounts.FindAsync(request.AccountID);
+        User? account = await _context.Users.FindAsync(request.AccountID);
         if (account == null)
             throw new Exception("Tài khoản không tồn tại.");
-
+        if (account.CountBorrow >= account.LimitBorrow)
+            throw new Exception("Tài khoản đã đạt giới hạn mượn! Vui lòng hoàn thành các giao dịch mượn trước khi tiếp tục");
+        if (account.Status is AccountStatus.BANNED)
+            throw new Exception("Tài khoản hiện tại đang bị khóa! vui lòng liên hệ thủ thư ở quầy  lễ tân để biết thêm thông tin."); 
         // Check if user has pending borrowings
         var hasPendingBorrowings = await _context.Borrowings
             .AnyAsync(b => b.AccountID == request.AccountID && b.Status == BorrowingStatus.PENDING);
@@ -64,6 +68,10 @@ public class BorrowingService : IBorrowingService
         }
 
         _context.Borrowings.Add(borrowing);
+        await _context.SaveChangesAsync();
+
+        account.CountBorrow++;
+
         await _context.SaveChangesAsync();
 
         // Load related data for response
@@ -139,6 +147,11 @@ public class BorrowingService : IBorrowingService
 
     public async Task<BooleanResponse> RenewBorrowingDetailAsync(RenewBorrowingRequest request, Guid accountId)
     {
+        User? account = await _context.Users.FindAsync(accountId);
+        if (account == null)
+            throw new Exception("Tai khoan khong ton tai");
+        if (account.CountRenew >= account.LimitRenew)
+            throw new Exception("Tai khoan khong con luot gia han! Vui long de y han va tra sach dung han.");
         var borrowingDetail = await _context.BorrowingDetails
             .Include(d => d.Borrowing)
             .FirstOrDefaultAsync(d => d.BorrowingDetailID == request.BorrowingDetailID && 
@@ -153,19 +166,21 @@ public class BorrowingService : IBorrowingService
 
         // Extend due date by 7 days
         borrowingDetail.DueDate = borrowingDetail.DueDate.AddDays(7);
+        account.CountRenew++;
+
         await _context.SaveChangesAsync();
 
         return new BooleanResponse(true);
     }
 
-    public async Task<BooleanResponse> ReturnBookAsync(int borrowingDetailId, Guid staffId)
+    public async Task<BooleanResponse> ReturnBookAsync(int borrowingDetailId, string ISBN)
     {
         var borrowingDetail = await _context.BorrowingDetails
             .Include(d => d.Book)
             .Include(d => d.Borrowing)
             .FirstOrDefaultAsync(d => d.BorrowingDetailID == borrowingDetailId);
 
-        if (borrowingDetail == null || borrowingDetail.Status != BorrowingDetailStatus.BORROWING)
+        if (borrowingDetail == null || borrowingDetail.Status != BorrowingDetailStatus.BORROWING || borrowingDetail.Book.ISBN != ISBN)
             return new BooleanResponse(false);
 
         borrowingDetail.Status = BorrowingDetailStatus.RETURNED;

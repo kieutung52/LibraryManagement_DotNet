@@ -10,7 +10,7 @@ public interface IBorrowingService
     Task<BooleanResponse> ApproveBorrowingRequestAsync(int borrowingId, Guid staffId);
     Task<BooleanResponse> RejectBorrowingRequestAsync(int borrowingId, Guid staffId);
     Task<BooleanResponse> RenewBorrowingDetailAsync(RenewBorrowingRequest request, Guid accountId);
-    Task<BooleanResponse> ReturnBookAsync(int borrowingDetailId, Guid staffId);
+    Task<BooleanResponse> ReturnBookAsync(int borrowingDetailId, string ISBN);
     Task<IEnumerable<BorrowingResponse>> GetBorrowingsByAccountAsync(Guid accountId);
     Task<IEnumerable<BorrowingResponse>> GetAllBorrowingsAsync();
     Task<BorrowingResponse> GetBorrowingByIdAsync(int borrowingId);
