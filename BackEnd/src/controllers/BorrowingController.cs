@@ -94,15 +94,19 @@ public class BorrowingController : ControllerBase
         return Ok(ApiResponse<BooleanResponse>.SuccessResponse(result, "Gia hạn mượn sách thành công."));
     }
 
+
+    // fix using UserId, ISBN to return book
     [HttpPut("return/{borrowingDetailId}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> ReturnBook(int borrowingDetailId)
+    public async Task<IActionResult> ReturnBook(ReturnBookRequest request)
     {
+        if (request.ISBN == string.Empty || request.borrowingDetailId <= 0)
+            throw new Exception("Loi format data");
         var staffId = await GetCurrentStaffIdAsync();
         if (staffId == null)
             return Unauthorized(ApiResponse<string>.ErrorResponse("Không xác định được nhân viên."));
 
-        var result = await _borrowingService.ReturnBookAsync(borrowingDetailId, staffId.Value);
+        var result = await _borrowingService.ReturnBookAsync(request.borrowingDetailId, request.ISBN);
         if (!result.is_successed)
             return BadRequest(ApiResponse<string>.ErrorResponse("Không thể trả sách."));
 
