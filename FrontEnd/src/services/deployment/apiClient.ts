@@ -2,7 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'ax
 import { ApiResponse } from '@/types/apiResponse';
 
 const apiClient = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -19,7 +19,6 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Sửa interceptor response để trả về toàn bộ ApiResponse
 apiClient.interceptors.response.use(
   ((response: AxiosResponse<ApiResponse<any>>) => {
     return response.data; // Trả về toàn bộ ApiResponse
