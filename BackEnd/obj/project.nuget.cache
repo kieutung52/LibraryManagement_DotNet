@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "rQTNHBBE4mJdCGH6F5RQ2I+4Ctn5JP4w2MJ1/VY7dyVwm4Wz2TEbWOuph3BklKEn/Qvn5bVq3Ew+FuDWC5n11g==",
+  "dgSpecHash": "ZG8tCGFPHSurc9TEKOl0l3mNmC4tKoz0LP4zaLzWT7btbp66mQj1ZUtwpver3B821BY3lx+Gr81b5F6uDa2CVQ==",
   "success": true,
-  "projectFilePath": "/home/kieutung/Workspace/Projects/LibraryManagement_DotNet/BackEnd/BackEnd.csproj",
+  "projectFilePath": "/home/kieutung/WorkSpace/Project/WebDevelopment/LibraryManagement_DotNet/BackEnd/BackEnd.csproj",
   "expectedPackageFiles": [
     "/home/kieutung/.nuget/packages/automapper/12.0.1/automapper.12.0.1.nupkg.sha512",
     "/home/kieutung/.nuget/packages/automapper.extensions.microsoft.dependencyinjection/12.0.1/automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

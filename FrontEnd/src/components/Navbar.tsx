@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/store/auth'
+import { useAuth } from '../store/auth'
 
 function NavItem({ to, children }: { to: string; children: React.ReactNode }) {
   return (
@@ -26,14 +26,14 @@ export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
-  const isAdmin = user?.role === 'admin'
+  const isAdmin = user?.role === 'ADMIN'
 
   return (
     <div className="border-b bg-white shadow-sm sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
         {/* Logo */}
         <button
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(isAdmin ? '/admin/reports' : '/dashboard')}
           className="flex items-center space-x-2 cursor-pointer"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-black" viewBox="0 0 24 24" fill="none"
@@ -48,14 +48,21 @@ export default function Navbar() {
         <nav className="hidden md:flex flex-grow justify-center space-x-6">
           {user ? (
             <>
-              <NavItem to="/dashboard">Trang chủ</NavItem>
-              <NavItem to="/books">Sách</NavItem>
-              <NavItem to="/my-borrowings">Lịch sử</NavItem>
-              {isAdmin && (
+              {isAdmin ? (
                 <>
-                  <NavItem to="/borrowings">Quản lý mượn trả</NavItem>
-                  <NavItem to="/categories">Danh mục</NavItem>
-                  <NavItem to="/admin-analytics">Dashboard</NavItem>
+                  <NavItem to="/admin/reports">Report</NavItem>
+                  <NavItem to="/admin/books">Books</NavItem>
+                  <NavItem to="/admin/categories">Categories</NavItem>
+                  <NavItem to="/admin/shelves">Shelves</NavItem>
+                  <NavItem to="/admin/borrowings">Borrowings</NavItem>
+                  <NavItem to="/admin/users">Users</NavItem>
+                </>
+              ) : (
+                <>
+                  <NavItem to="/dashboard">Dashboard</NavItem>
+                  <NavItem to="/books">Books</NavItem>
+                  <NavItem to="/categories">Categories</NavItem>
+                  <NavItem to="/my-borrowings">My-Borrowing</NavItem>
                 </>
               )}
             </>
@@ -78,8 +85,8 @@ export default function Navbar() {
                 <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
                 <circle cx="12" cy="7" r="4"/>
               </svg>
-              <span className="font-semibold text-gray-800 truncate max-w-[12ch]" title={user.name}>
-                {user.name}
+              <span className="font-semibold text-gray-800 truncate max-w-[12ch]" title={user.fullName}>
+                {user.fullName}
               </span>
               <button
                 onClick={() => { logout(); navigate('/login'); }}
