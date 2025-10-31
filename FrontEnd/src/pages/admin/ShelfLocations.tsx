@@ -1,4 +1,3 @@
-// Tệp: ../FrontEnd/src/pages/admin/ShelfLocations.tsx
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -52,7 +51,8 @@ import {
 import { toast } from 'sonner';
 import { Skeleton } from '../../components/ui/skeleton';
 import { shelfService } from '../../services/shelfService';
-import { ShelfLocation, ShelfStatus } from '../../types/typeEntity';
+import { bookService } from '../../services/bookService';
+import { ShelfLocation, ShelfStatus, Book } from '../../types/typeEntity';
 
 interface ShelfFormData {
   locationName: string;
@@ -69,8 +69,8 @@ export function AdminShelfLocations() {
   const [viewBooksDialogOpen, setViewBooksDialogOpen] = useState(false);
   const [addBookDialogOpen, setAddBookDialogOpen] = useState(false);
   const [selectedShelf, setSelectedShelf] = useState<ShelfLocation | null>(null);
-  const [shelfBooks, setShelfBooks] = useState<any[]>([]); // Placeholder for shelf books
-  const [availableBooks, setAvailableBooks] = useState<any[]>([]); // Placeholder for available books
+  const [shelfBooks, setShelfBooks] = useState<any[]>([]); 
+  const [availableBooks, setAvailableBooks] = useState<Book[]>([]); 
   const [selectedBookId, setSelectedBookId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState<ShelfFormData>({
@@ -99,13 +99,18 @@ export function AdminShelfLocations() {
   };
 
   const loadShelfBooks = async (shelfId: number) => {
-    // Placeholder: Implement if needed, currently no service method for this
+    
     setShelfBooks([]);
   };
 
   const loadAvailableBooks = async () => {
-    // Placeholder: Use bookService.getAllBooks() if needed
-    setAvailableBooks([]);
+    try {
+      const books = await bookService.getAllBooks();
+      
+      setAvailableBooks(books);
+    } catch (error) {
+      toast.error('Không thể tải danh sách sách có sẵn');
+    }
   };
 
   const handleOpenDialog = (shelf?: ShelfLocation) => {
@@ -243,7 +248,7 @@ export function AdminShelfLocations() {
   };
 
   const handleRemoveBookFromShelf = async (bookLocationId: string) => {
-    // Placeholder: Implement if service method exists
+    
     try {
       toast.success('Xóa sách khỏi kệ thành công');
       if (selectedShelf) {
@@ -300,7 +305,7 @@ export function AdminShelfLocations() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto max-w-7xl space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -587,15 +592,39 @@ export function AdminShelfLocations() {
 
       {/* Add Book Dialog - Placeholder */}
       {addBookDialogOpen && selectedShelf && (
-        <Dialog open={addBookDialogOpen} onOpenChange={setAddBookDialogOpen}>
+        <Dialog open={addBookDialogOpen} onOpenChange={setAddBookDialogOpen}> 
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Thêm sách vào kệ: {selectedShelf.locationName}</DialogTitle>
             </DialogHeader>
-            <DialogContent>
-              {/* Select book and add */}
-              <Button onClick={handleAddBookToShelf}>Thêm sách</Button>
-            </DialogContent>
+            <div className="py-4 space-y-4">
+              <Label htmlFor="book-select">Chọn sách</Label>
+              <Select
+                value={selectedBookId}
+                onValueChange={(value : string) => setSelectedBookId(value)}
+              >
+                <SelectTrigger id="book-select">
+                  <SelectValue placeholder="Tìm và chọn sách..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableBooks.length === 0 ? (
+                    <SelectItem value="" disabled>Đang tải...</SelectItem>
+                  ) : (
+                    availableBooks.map(book => (
+                      <SelectItem key={book.bookID} value={book.bookID.toString()}>
+                        {book.title} (ISBN: {book.isbn})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setAddBookDialogOpen(false)}>
+                  Hủy
+                </Button>
+                <Button onClick={handleAddBookToShelf}>Thêm sách</Button> [cite: 269]
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}

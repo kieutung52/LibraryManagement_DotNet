@@ -126,7 +126,7 @@ public class BorrowingController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize(Roles = "ADMIN")] // <-- THÊM MỚI (theo spec)
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> GetBorrowingById(int id)
     {
         var borrowing = await _borrowingService.GetBorrowingByIdAsync(id);

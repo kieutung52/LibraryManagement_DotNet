@@ -64,7 +64,6 @@ export interface User {
 }
 
 // Dựa trên DTO/response/library/books/BookResponse.cs
-// Đổi tên thành 'Book' để dùng chung cho toàn bộ FE
 export interface Book {
   bookID: number;
   isbn: string;
@@ -86,7 +85,6 @@ export interface Category {
   categoryID: number;
   name: string;
   description?: string | null;
-  // Thêm createdAt từ UI type cũ nếu cần, giả sử API có trả về
   createdAt?: string;
 }
 
@@ -137,10 +135,6 @@ export interface DataAnalyticsDaily {
   updatedAt: string;
 }
 
-// ======================================================
-// ADDITIONAL FRONTEND ENTITIES (Không bị trùng lặp)
-// ======================================================
-
 // BookCopy cho UI
 export interface BookCopy {
   copyId: string;
@@ -148,7 +142,7 @@ export interface BookCopy {
   status: 'AVAILABLE' | 'BORROWED' | 'DAMAGED';
 }
 
-// BorrowingSlip cho UI (Đã được chuẩn hóa)
+// BorrowingSlip cho UI 
 export interface BorrowingSlip {
   slipId: string;
   user: User;

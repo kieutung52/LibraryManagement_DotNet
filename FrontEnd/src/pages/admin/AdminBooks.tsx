@@ -43,12 +43,11 @@ export function AdminBooks() {
   const [isDialogOpen, setIsDialogOpen] = useState(false); 
   const [editingBook, setEditingBook] = useState<Book | null>(null); 
   
-  // State cho form
   const [formData, setFormData] = useState({
     title: '',
     author: '',
     isbn: '',
-    categoryID: 0, // Sửa: Xóa categoryName, chỉ dùng categoryID
+    categoryID: 0,
     description: '',
     totalQuantity: 1,
     availableQuantity: 1,
@@ -122,39 +121,44 @@ export function AdminBooks() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); 
-    
+    e.preventDefault();
     try {
       if (editingBook) {
         const updateData: UpdateBookRequest = {
           title: formData.title,
           author: formData.author,
-          categoryID: formData.categoryID === 0 ? null : formData.categoryID, 
+          categoryID: formData.categoryID === 0 ? null : formData.categoryID,
           publicationYear: formData.publicationYear,
           totalQuantity: formData.totalQuantity,
           availableQuantity: formData.availableQuantity,
+          description: formData.description,
+          publisher: formData.publisher,
+          coverImage: formData.coverImage,
         };
-        await bookService.updateBook(editingBook.bookID as number, updateData); 
-        toast.success('Cập nhật sách thành công'); 
+        await bookService.updateBook(editingBook.bookID as number, updateData);
+        toast.success('Cập nhật sách thành công');
       } else {
-        // Tuân theo CreateBookRequest DTO 
+        
         const createData: CreateBookRequest = {
           isbn: formData.isbn,
           title: formData.title,
           author: formData.author,
-          categoryID: formData.categoryID === 0 ? null : formData.categoryID, 
+          categoryID: formData.categoryID === 0 ? null : formData.categoryID,
           publicationYear: formData.publicationYear,
           totalQuantity: formData.totalQuantity,
+          description: formData.description,
+          publisher: formData.publisher,
+          coverImage: formData.coverImage,
         };
-        await bookService.createBook(createData); 
+        await bookService.createBook(createData);
         toast.success('Thêm sách thành công'); 
       }
       
       loadBooks(); 
-      setIsDialogOpen(false); 
-      resetForm(); 
+      setIsDialogOpen(false);
+      resetForm();
     } catch (error) {
-      toast.error(editingBook ? 'Không thể cập nhật sách' : 'Không thể thêm sách'); 
+      toast.error(editingBook ? 'Không thể cập nhật sách' : 'Không thể thêm sách');
     }
   };
 
@@ -181,7 +185,7 @@ export function AdminBooks() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto max-w-7xl space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1>Quản lý sách</h1>
@@ -195,7 +199,7 @@ export function AdminBooks() {
               Thêm sách mới
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingBook ? 'Chỉnh sửa sách' : 'Thêm sách mới'} 
@@ -234,7 +238,6 @@ export function AdminBooks() {
                     value={formData.isbn}
                     onChange={(e) => setFormData({ ...formData, isbn: e.target.value })} 
                     required
-                    // Sửa: Chỉ cho phép sửa ISBN khi thêm mới
                     disabled={!!editingBook} 
                   />
                 </div>
@@ -365,7 +368,7 @@ export function AdminBooks() {
               <SelectContent>
                 <SelectItem value="all">Tất cả danh mục</SelectItem> 
                 {categories.map(category => (
-                  // Sửa: value phải là categoryID (dưới dạng string)
+                  
                   <SelectItem key={category.categoryID} value={category.categoryID.toString()}> 
                     {category.name} 
                   </SelectItem>
@@ -398,7 +401,7 @@ export function AdminBooks() {
                   </TableRow>
                 ) : (
                   filteredBooks.map((book) => {
-                    // Tìm category name từ list categories đã tải
+                    
                     const category = categories.find(c => c.categoryID === book.categoryID); 
                     return (
                       <TableRow key={book.bookID}> 

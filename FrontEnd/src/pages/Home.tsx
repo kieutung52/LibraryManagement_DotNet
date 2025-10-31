@@ -22,7 +22,9 @@ export function Home() {
           <Button size="lg" asChild>
             <Link to="/books">
               <BookOpen className="w-5 h-5 mr-2" />
-              Khám phá sách
+              <span className='text-white'>
+                Khám phá sách
+              </span>
             </Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
@@ -117,7 +119,9 @@ export function Home() {
         </p>
         <Button size="lg" asChild>
           <Link to="/books">
-            Khám phá ngay
+            <span className='text-white'>
+              Khám phá ngay
+            </span>
           </Link>
         </Button>
       </section>

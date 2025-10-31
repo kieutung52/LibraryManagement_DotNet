@@ -22,7 +22,6 @@ public class BorrowingService : IBorrowingService
 
     public async Task<BorrowingResponse> CreateBorrowingRequestAsync(CreateBorrowingRequest request)
     {
-        // Check if account exists
         User? account = await _context.Users.FindAsync(request.AccountID);
         if (account == null)
             throw new Exception("Tài khoản không tồn tại.");
@@ -30,7 +29,6 @@ public class BorrowingService : IBorrowingService
             throw new Exception("Tài khoản đã đạt giới hạn mượn! Vui lòng hoàn thành các giao dịch mượn trước khi tiếp tục");
         if (account.Status is AccountStatus.BANNED)
             throw new Exception("Tài khoản hiện tại đang bị khóa! vui lòng liên hệ thủ thư ở quầy  lễ tân để biết thêm thông tin."); 
-        // Check if user has pending borrowings
         var hasPendingBorrowings = await _context.Borrowings
             .AnyAsync(b => b.AccountID == request.AccountID && b.Status == BorrowingStatus.PENDING);
         
@@ -44,7 +42,6 @@ public class BorrowingService : IBorrowingService
             Status = BorrowingStatus.PENDING
         };
 
-        // Calculate due date (14 days from now)
         var dueDate = DateTime.UtcNow.AddDays(14);
 
         foreach (var bookRequest in request.Books)
@@ -74,7 +71,6 @@ public class BorrowingService : IBorrowingService
 
         await _context.SaveChangesAsync();
 
-        // Load related data for response
         await _context.Entry(borrowing)
             .Reference(b => b.Account)
             .LoadAsync();
@@ -111,14 +107,12 @@ public class BorrowingService : IBorrowingService
         if (borrowing == null || borrowing.Status != BorrowingStatus.PENDING)
             return new BooleanResponse(false);
 
-        // Check if books are still available
         foreach (var detail in borrowing.Details)
         {
             if (detail.Book.AvailableQuantity < detail.QuantityBook)
                 return new BooleanResponse(false);
         }
 
-        // Update book quantities and status
         foreach (var detail in borrowing.Details)
         {
             detail.Book.AvailableQuantity -= detail.QuantityBook;
@@ -126,7 +120,6 @@ public class BorrowingService : IBorrowingService
         }
 
         borrowing.Status = BorrowingStatus.APPROVED;
-        // borrowing.StaffID = staffId;
 
         await _context.SaveChangesAsync();
         return new BooleanResponse(true);
@@ -139,7 +132,6 @@ public class BorrowingService : IBorrowingService
             return new BooleanResponse(false);
 
         borrowing.Status = BorrowingStatus.REJECTED;
-        // borrowing.StaffID = staffId;
 
         await _context.SaveChangesAsync();
         return new BooleanResponse(true);
@@ -160,11 +152,9 @@ public class BorrowingService : IBorrowingService
         if (borrowingDetail == null || borrowingDetail.Status != BorrowingDetailStatus.BORROWING)
             return new BooleanResponse(false);
 
-        // Check if renewal is allowed (only once and before due date)
         if (DateTime.UtcNow > borrowingDetail.DueDate.AddDays(-2))
             return new BooleanResponse(false);
 
-        // Extend due date by 7 days
         borrowingDetail.DueDate = borrowingDetail.DueDate.AddDays(7);
         account.CountRenew++;
 
@@ -187,7 +177,6 @@ public class BorrowingService : IBorrowingService
         borrowingDetail.ReturnDate = DateTime.UtcNow;
         borrowingDetail.Book.AvailableQuantity += borrowingDetail.QuantityBook;
 
-        // Update borrowing status if all books are returned
         var borrowing = borrowingDetail.Borrowing;
         var remainingBooks = await _context.BorrowingDetails
             .CountAsync(d => d.BorrowingID == borrowing.BorrowingID && 

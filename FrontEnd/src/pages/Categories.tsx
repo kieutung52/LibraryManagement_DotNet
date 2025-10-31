@@ -1,4 +1,3 @@
-// Tệp: ../FrontEnd/src/pages/Categories.tsx
 import React, { useState, useEffect } from 'react';
 import { categoryService } from '../services/categoryService';
 import { Category } from '../types/typeEntity';

@@ -75,14 +75,12 @@ public class ShelfService : IShelfService
             return new AddBookToShelfResponse { Success = false, Message = "Sách hoặc kệ không tồn tại." };
         }
 
-        // Check if shelf has capacity
         var currentBooks = await _context.BookLocations.CountAsync(bl => bl.ShelfID == request.ShelfID);
         if (currentBooks >= shelf.Capacity)
         {
             return new AddBookToShelfResponse { Success = false, Message = "Kệ đã đầy." };
         }
 
-        // Check if book is already on this shelf
         var existingLocation = await _context.BookLocations
             .FirstOrDefaultAsync(bl => bl.BookID == request.BookID && bl.ShelfID == request.ShelfID);
         

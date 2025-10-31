@@ -1,4 +1,3 @@
-// Tệp: ../FrontEnd/src/pages/MyHistory.tsx
 import React, { useEffect, useState } from 'react';
 import { borrowingService } from '../services/borrowingService';
 import { BorrowingResponse, BorrowingStatus, BorrowingDetailStatus } from '../types/typeEntity';
@@ -95,12 +94,12 @@ export function MyHistory() {
     return <Navigate to="/login" replace />;
   }
 
-  // Flatten history for display
+  
   const flattenedHistory = history.flatMap(borrowing =>
     borrowing.details.map(detail => ({
       slipId: borrowing.borrowingID.toString(),
       bookTitle: detail.bookTitle,
-      barcode: detail.bookID.toString(), // Use bookID as placeholder for barcode
+      barcode: detail.bookID.toString(), 
       borrowDate: borrowing.borrowDate,
       dueDate: detail.dueDate,
       returnDate: detail.returnDate,
@@ -109,7 +108,7 @@ export function MyHistory() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto max-w-7xl space-y-6">
       <div className="text-center">
         <h1 className="text-3xl mb-2">Lịch sử mượn sách</h1>
         <p className="text-muted-foreground">Theo dõi tất cả các lần mượn sách của bạn</p>

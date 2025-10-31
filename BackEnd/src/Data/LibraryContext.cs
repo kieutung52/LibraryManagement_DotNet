@@ -24,7 +24,6 @@ public class LibraryContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // --- Account TPH discriminator ---
         modelBuilder.Entity<Account>(b =>
         {
             b.ToTable("Accounts");
@@ -35,7 +34,6 @@ public class LibraryContext : DbContext
             b.Property(a => a.FullName).HasMaxLength(100).IsRequired(); 
             b.Property(a => a.Role).HasMaxLength(10).IsRequired(); 
 
-            // map enum AccountStatus to string
             b.Property(a => a.Status)
              .HasConversion<string>()
              .HasMaxLength(20)
@@ -48,7 +46,6 @@ public class LibraryContext : DbContext
                 .HasValue<Admin>("ADMIN"); 
         });
 
-        // Configure Admin specific columns
         modelBuilder.Entity<Admin>(b =>
         {
             b.Property(a => a.StaffCode).HasMaxLength(255); 
@@ -58,7 +55,6 @@ public class LibraryContext : DbContext
              .HasMaxLength(20); 
         });
 
-        // --- Cập nhật: Thêm cấu hình default value cho User ---
         modelBuilder.Entity<User>(b =>
         {
             b.Property(u => u.LimitRenew).HasDefaultValue(3); 
@@ -68,7 +64,6 @@ public class LibraryContext : DbContext
             b.Property(u => u.CountViolations).HasDefaultValue(0); 
         });
 
-        // --- Category ---
         modelBuilder.Entity<Category>(b =>
         {
             b.ToTable("Categories");
@@ -78,7 +73,6 @@ public class LibraryContext : DbContext
             b.Property(c => c.CreatedAt).HasDefaultValueSql("now()"); 
         });
 
-        // --- Book ---
         modelBuilder.Entity<Book>(b =>
         {
             b.ToTable("Books");
@@ -88,7 +82,6 @@ public class LibraryContext : DbContext
             b.Property(x => x.Title).HasMaxLength(255).IsRequired(); 
             b.Property(x => x.Author).HasMaxLength(255).IsRequired(); 
 
-            // --- Cập nhật: Thêm cấu hình cho các thuộc tính mới của Book ---
             b.Property(x => x.Description).HasColumnType("text").IsRequired().HasDefaultValue(string.Empty); 
             b.Property(x => x.Publisher).HasMaxLength(255).IsRequired().HasDefaultValue(string.Empty); 
             b.Property(x => x.CoverImage).HasMaxLength(500).IsRequired().HasDefaultValue(string.Empty); 
@@ -104,7 +97,6 @@ public class LibraryContext : DbContext
             b.Property(x => x.CreatedAt).HasDefaultValueSql("now()"); 
         });
 
-        // --- Shelf ---
         modelBuilder.Entity<Shelf>(b =>
         {
             b.ToTable("Shelf");
@@ -116,14 +108,12 @@ public class LibraryContext : DbContext
              .HasMaxLength(20)
              .HasDefaultValue(ShelfStatus.EMPTY); 
 
-            // --- Cập nhật: Thêm default value cho Capacity và CurrentBooks ---
             b.Property(s => s.Capacity).HasDefaultValue(0); 
             b.Property(s => s.CurrentBooks).HasDefaultValue(0); 
 
             b.Property(s => s.CreatedAt).HasDefaultValueSql("now()"); 
         });
 
-        // --- BookLocation ---
         modelBuilder.Entity<BookLocation>(b =>
         {
             b.ToTable("BookLocation");
@@ -141,7 +131,6 @@ public class LibraryContext : DbContext
             b.Property(bl => bl.CreatedAt).HasDefaultValueSql("now()"); 
         });
 
-        // --- Borrowing ---
         modelBuilder.Entity<Borrowing>(b =>
         {
             b.ToTable("Borrowings");
@@ -163,7 +152,6 @@ public class LibraryContext : DbContext
             b.Property(x => x.CreatedAt).HasDefaultValueSql("now()"); 
         });
 
-        // --- BorrowingDetail ---
         modelBuilder.Entity<BorrowingDetail>(b =>
         {
             b.ToTable("BorrowingDetails");
@@ -179,25 +167,21 @@ public class LibraryContext : DbContext
              .HasForeignKey(x => x.BookID) 
              .OnDelete(DeleteBehavior.Cascade);
 
-            // --- Cập nhật: Thêm default value cho QuantityBook ---
             b.Property(x => x.QuantityBook).HasDefaultValue(1); 
 
             b.Property(x => x.Status)
              .HasConversion<string>()
              .HasDefaultValue(BorrowingDetailStatus.BORROWING); 
 
-            // --- Cập nhật: Thêm cấu hình CreatedAt ---
             b.Property(b => b.CreatedAt).HasDefaultValueSql("now()"); 
         });
 
-        // --- DataAnalyticsDaily ---
         modelBuilder.Entity<DataAnalyticsDaily>(b =>
         {
             b.ToTable("DataAnalyticsDaily");
             b.HasKey(x => x.DataAnalyticsID); 
             b.Property(x => x.ReportDate).IsRequired(); 
 
-            // --- Cập nhật: Thêm default value cho các thuộc tính Count ---
             b.Property(x => x.CountBorrowings).HasDefaultValue(0); 
             b.Property(x => x.CountUsersViolations).HasDefaultValue(0); 
             b.Property(x => x.CountUsersVisited).HasDefaultValue(0); 
@@ -209,7 +193,6 @@ public class LibraryContext : DbContext
         });
     }
 
-    // update CreatedAt/UpdatedAt automatically
     public override int SaveChanges()
     {
         UpdateTimestamps();

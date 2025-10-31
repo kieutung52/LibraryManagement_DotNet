@@ -1,4 +1,3 @@
-// Tệp: ../FrontEnd/src/pages/BookDetail.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bookService } from '../services/bookService';
@@ -38,7 +37,7 @@ export const BookDetail = () => {
         const data = await bookService.getBookById(Number(id));
         setBook(data);
 
-        // Fetch category details if categoryID exists
+        
         if (data.categoryID) {
           try {
             const catData = await categoryService.getCategoryById(data.categoryID);
@@ -176,14 +175,6 @@ export const BookDetail = () => {
           </Card>
 
           {/* Copies List - Placeholder */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Danh sách bản sao</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>Placeholder for book copies list</p>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Sidebar */}
@@ -211,13 +202,17 @@ export const BookDetail = () => {
               {book.availableQuantity > 0 ? (
                 <Button className="w-full" asChild>
                   <Link to="/borrowings/request">
-                    Mượn sách này
+                    <span className='text-white'>
+                      Mượn sách này
+                    </span>
                   </Link>
                 </Button>
               ) : (
                 <Button className="w-full" disabled variant="outline">
                   <XCircle className="w-4 h-4 mr-2" />
-                  Hiện không có sẵn
+                  <span className='text-white'>
+                    Hiện không có sẵn
+                  </span>
                 </Button>
               )}
             </CardContent>

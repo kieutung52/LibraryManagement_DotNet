@@ -19,6 +19,7 @@ const createUser = async (data: CreateUserRequest): Promise<User> => {
 };
 
 const updateUser = async (id: string, data: UpdateUserRequest): Promise<BooleanResponse> => {
+  console.warn(data);
   const response: ApiResponse<BooleanResponse> = await apiClient.put(`/User/${id}`, data);
   return response.data!;
 };

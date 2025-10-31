@@ -54,7 +54,6 @@ public class CategoryService : ICategoryService
         var category = await _context.Categories.FindAsync(id);
         if (category == null) return new BooleanResponse(false);
 
-        // Check if category has books
         var hasBooks = await _context.Books.AnyAsync(b => b.CategoryID == id);
         if (hasBooks) return new BooleanResponse(false);
 

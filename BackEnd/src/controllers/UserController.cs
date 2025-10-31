@@ -105,7 +105,7 @@ public class UserController : ControllerBase
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> UpdateUser(Guid id, UpdateUserRequest model)
     {
-        if (!ModelState.IsValid)  // Add this
+        if (!ModelState.IsValid)
         {
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
             Console.WriteLine("Validation errors: {Errors}", string.Join(", ", errors));  // Log

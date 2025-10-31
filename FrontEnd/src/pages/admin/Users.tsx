@@ -74,14 +74,14 @@ export function AdminUsers() {
   const [error, setError] = useState('');
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);
   
-  // Dialog states
+  
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Form data
+  
   const [formData, setFormData] = useState<UserFormData>({
     fullName: '',
     email: '',
@@ -112,31 +112,34 @@ export function AdminUsers() {
   const handleStatusChange = async (userId: string, newStatus: AccountStatus) => {
     setUpdatingUser(userId);
     try {
-          // Lỗi: 'updateUserStatus' không tồn tại.
-          // Fix: Dùng 'updateUser' và lấy data cũ.
-          const userToUpdate = users.find(u => u.accountID === userId);
-          if (!userToUpdate) {
-            toast.error('Không tìm thấy người dùng');
-            setUpdatingUser(null);
-            return;
-          }
       
-          const updateData: UpdateUserRequest = {
-            fullName: userToUpdate.fullName,
-            email: userToUpdate.email,
-            role: userToUpdate.role,
-            status: newStatus,
-            limitBorrow: userToUpdate.userData?.limitBorrow,
-            limitRenew: userToUpdate.userData?.limitRenew,
-            countViolations: userToUpdate.userData?.countViolations,
-          };
-          
-          await userService.updateUser(userId, updateData);
-          
-    setUsers(users.map(user => 
-            user.accountID === userId ? { ...userToUpdate, status: newStatus } : user
-          ));
-    toast.success(`Đã ${newStatus === AccountStatus.ACTIVE ? 'kích hoạt' : 'vô hiệu hóa'} tài khoản thành công`);
+      
+      const userToUpdate = users.find(u => u.accountID === userId);
+      if (!userToUpdate) {
+        toast.error('Không tìm thấy người dùng');
+        setUpdatingUser(null);
+        return;
+      }
+  
+      const updateData: UpdateUserRequest = {
+        fullName: userToUpdate.fullName,
+        email: userToUpdate.email,
+        role: userToUpdate.role,
+        status: newStatus,
+        userData: {
+          limitBorrow: userToUpdate.userData?.limitBorrow,
+          limitRenew: userToUpdate.userData?.limitRenew,
+          countViolations: userToUpdate.userData?.countViolations,
+        },
+        adminData: null,
+      };
+      
+      await userService.updateUser(userId, updateData);
+      
+      setUsers(users.map(user => 
+        user.accountID === userId ? { ...userToUpdate, status: newStatus } : user
+      ));
+      toast.success(`Đã ${newStatus === AccountStatus.ACTIVE ? 'kích hoạt' : 'vô hiệu hóa'} tài khoản thành công`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Không thể cập nhật trạng thái');
     } finally {
@@ -180,43 +183,47 @@ export function AdminUsers() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-          if (editingUser) {
-            // Lỗi: 'updateUser' trả về BooleanResponse, không phải User.
-            // Lỗi: 'formData' không khớp 'UpdateUserRequest' (đã sửa ở typeRequest.ts)
-            // Fix: Gọi API và tự cập nhật state.
-            await userService.updateUser(editingUser.accountID, formData);
-            
-            // Tự tạo object user mới cho state
-            const updatedUserInState: User = {
-              ...editingUser,
-              fullName: formData.fullName,
-              email: formData.email,
-              role: formData.role,
-              status: formData.status,
-              userData: {
-                ...(editingUser.userData || { countBorrow: 0, countRenew: 0 }), // Giữ các trường cũ
-                limitBorrow: formData.limitBorrow || 5,
-                limitRenew: formData.limitRenew || 3,
-                countViolations: formData.countViolations || 0,
-              }
-            };
-
-    setUsers(users.map(user => 
-              user.accountID === editingUser.accountID ? updatedUserInState : user
-            ));
-    toast.success('Cập nhật người dùng thành công');
-          } else {
-            // Lỗi: 'formData' thiếu 'password' cho 'CreateUserRequest'.
-            // Fix: Tạo 'createRequest' và thêm password mặc định.
-            const createRequest: CreateUserRequest = {
-              email: formData.email,
-              fullName: formData.fullName,
-              password: "defaultPassword123" // Gửi password mặc định
-            };
-            const newUser = await userService.createUser(createRequest);
-    setUsers([...users, newUser]);
-            toast.success('Thêm người dùng mới thành công');
+      if (editingUser) {
+        await userService.updateUser(editingUser.accountID, {
+          fullName: formData.fullName,
+          email: formData.email,
+          role: formData.role,
+          status: formData.status,
+          userData: {
+            limitBorrow: formData.limitBorrow,
+            limitRenew: formData.limitRenew,
+            countViolations: formData.countViolations,
           }
+        });
+        
+      const updatedUserInState: User = {
+        ...editingUser,
+        fullName: formData.fullName,
+        email: formData.email,
+        role: formData.role,
+        status: formData.status,
+        userData: {
+          ...(editingUser.userData || { countBorrow: 0, countRenew: 0 }),
+          limitBorrow: formData.limitBorrow || 5,
+          limitRenew: formData.limitRenew || 3,
+          countViolations: formData.countViolations || 0,
+        }
+      };
+
+      setUsers(users.map(user => 
+        user.accountID === editingUser.accountID ? updatedUserInState : user
+      ));
+      toast.success('Cập nhật người dùng thành công');
+      } else {
+        const createRequest: CreateUserRequest = {
+          email: formData.email,
+          fullName: formData.fullName,
+          password: "defaultPassword123"
+        };
+        const newUser = await userService.createUser(createRequest);
+        setUsers([...users, newUser]);
+        toast.success('Thêm người dùng mới thành công');
+      }
       handleCloseDialog();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Có lỗi xảy ra');
@@ -263,7 +270,7 @@ export function AdminUsers() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto max-w-7xl space-y-6">
       <div className="text-center">
         <h1 className="text-3xl mb-2">Quản lý người dùng</h1>
         <p className="text-muted-foreground">Quản lý tài khoản và quyền truy cập người dùng</p>
@@ -295,7 +302,7 @@ export function AdminUsers() {
             <div className="flex items-center space-x-2">
               <CheckCircle className="w-8 h-8 text-green-600" />
               <div>
-                <div className="text-2xl">{users.filter(u => u.status === 'ACTIVE').length}</div>
+                <div className="text-2xl">{users.filter(u => u.status === AccountStatus.ACTIVE).length}</div>
                 <div className="text-sm text-muted-foreground">Đang hoạt động</div>
               </div>
             </div>
@@ -307,8 +314,8 @@ export function AdminUsers() {
             <div className="flex items-center space-x-2">
               <XCircle className="w-8 h-8 text-red-600" />
               <div>
-                <div className="text-2xl">{users.filter(u => u.status === 'BANNED').length}</div>
-                <div className="text-sm text-muted-foreground">Ngừng hoạt động</div>
+                <div className="text-2xl">{users.filter(u => u.status === AccountStatus.BANNED || u.status === AccountStatus.SUSPENDED).length}</div>
+                <div className="text-sm text-muted-foreground">Không hoạt động</div>
               </div>
             </div>
           </CardContent>
@@ -399,14 +406,21 @@ export function AdminUsers() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.status === 'ACTIVE' ? 'secondary' : 'destructive'}>
-                          {user.status === 'ACTIVE' ? (
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                          ) : (
-                            <XCircle className="w-3 h-3 mr-1" />
-                          )}
-                          {user.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động'}
-                        </Badge>
+                        {user.status === AccountStatus.ACTIVE && (
+                          <Badge variant="secondary">
+                            <CheckCircle className="w-3 h-3 mr-1" /> Hoạt động
+                          </Badge>
+                        )}
+                        {user.status === AccountStatus.SUSPENDED && (
+                          <Badge variant="outline" className="border-yellow-600 text-yellow-700">
+                            <XCircle className="w-3 h-3 mr-1" /> Tạm khóa
+                          </Badge>
+                        )}
+                        {user.status === AccountStatus.BANNED && (
+                          <Badge variant="destructive">
+                            <XCircle className="w-3 h-3 mr-1" /> Đã khóa
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell>
                         <span className={(user.userData?.countViolations || 0) > 0 ? 'text-red-600' : 'text-green-600'}>
@@ -439,7 +453,8 @@ export function AdminUsers() {
                               </Button>
                               <Button
                                 size="sm"
-                                variant={user.status === 'ACTIVE' ? 'destructive' : 'default'}
+                                variant={user.status === AccountStatus.ACTIVE ? "destructive" : "default"}
+                                className="w-[145px] h-9 bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:text-white dark:hover:bg-red-700" 
                                 onClick={() => handleStatusChange(
                                   user.accountID, 
                                   user.status === AccountStatus.ACTIVE ? AccountStatus.SUSPENDED : AccountStatus.ACTIVE
@@ -449,7 +464,7 @@ export function AdminUsers() {
                                 {updatingUser === user.accountID ? (
                                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
-                                  user.status === 'ACTIVE' ? 'Vô hiệu hóa' : 'Kích hoạt'
+                                  user.status === AccountStatus.ACTIVE ? 'Vô hiệu hóa' : 'Kích hoạt'
                                 )}
                               </Button>
                             </>

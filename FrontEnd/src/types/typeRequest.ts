@@ -26,10 +26,16 @@ export interface UpdateUserRequest {
   fullName: string;
   role: string;
   email: string;
-  status?: AccountStatus | null;
-  limitBorrow?: number;
-  limitRenew?: number;
-  countViolations?: number;
+  status?: string | null;
+  adminData?: { 
+    staffCode?: string;
+    position?: string;
+  } | null;
+  userData?: {
+    limitBorrow?: number;
+    limitRenew?: number;
+    countViolations?: number;
+  } | null;
 }
 
 // Dựa trên DTO/request/library/books/CreateBookRequest.cs [cite: 132-136]
@@ -40,6 +46,9 @@ export interface CreateBookRequest {
   categoryID?: number | null;
   publicationYear?: number | null;
   totalQuantity: number;
+  description?: string | null;
+  publisher?: string | null;
+  coverImage?: string | null;
 }
 
 // Dựa trên DTO/request/library/books/UpdateBookRequest.cs [cite: 137-141]
@@ -50,6 +59,9 @@ export interface UpdateBookRequest {
   publicationYear?: number | null;
   totalQuantity: number;
   availableQuantity: number;
+  description?: string | null;
+  publisher?: string | null;
+  coverImage?: string | null;
 }
 
 // Dựa trên DTO/request/library/category/CreateCategoryRequest.cs [cite: 144, 145]
@@ -75,7 +87,7 @@ export interface CreateShelfRequest {
 export interface UpdateShelfRequest {
   locationName: string;
   description?: string | null;
-  status: string; // Backend nhận string[cite: 147], nên gửi string (ví dụ: "EMPTY", "FULL")
+  status: string;
   capacity: number;
 }
 
@@ -93,7 +105,7 @@ export interface BorrowingBookRequest {
 
 // Dựa trên DTO/request/borrowing/CreateBorrowingRequest.cs (class chính) [cite: 114, 115]
 export interface CreateBorrowingRequest {
-  accountID: string; // Guid
+  accountID: string; 
   books: BorrowingBookRequest[];
 }
 
@@ -111,6 +123,6 @@ export interface ReturnBookRequest {
 
 // Dựa trên DTO/request/borrowing/UpdateBorrowingRequest.cs [cite: 120, 121]
 export interface UpdateBorrowingRequest {
-  status: BorrowingStatus;
-  staffID?: string | null; // Guid?
+  status: string | null;
+  staffID?: string | null; 
 }

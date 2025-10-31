@@ -74,7 +74,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
 app.UseCors("AllowReactApp");
 
 // 7. Use Authentication & Authorization

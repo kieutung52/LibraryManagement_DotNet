@@ -49,8 +49,8 @@ public class DataAnalysisService
             CountUsersViolations = countUsersViolations,
             CountBorrowingsToExpire = countBorrowingsToExpire,
             CountBorrowingsRequestPending = countBorrowingsRequestPending,
-            CountUsersVisited = 0, // Would need tracking implementation
-            CountUserBack = 0 // Would need tracking implementation
+            CountUsersVisited = 0,
+            CountUserBack = 0
         };
 
         _context.DataAnalyticsDaily.Add(analytics);

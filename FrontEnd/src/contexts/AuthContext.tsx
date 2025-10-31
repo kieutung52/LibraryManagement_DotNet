@@ -10,7 +10,7 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  isLoading: boolean; // Thêm: Để xử lý tải trang
+  isLoading: boolean; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,19 +33,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Sửa: Xác thực token khi tải trang
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
         setToken(storedToken);
         try {
-          // Gọi API để lấy thông tin user mới nhất
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
           localStorage.setItem('currentUser', JSON.stringify(currentUser));
         } catch (error) {
           console.error("Auth init failed:", error);
-          // Token hỏng, đăng xuất
           logout();
         }
       }
@@ -53,12 +50,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
 
     initAuth();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async (credentials: LoginRequest) => {
     try {
-      // Sửa: Gọi API login thật
       const response = await authService.login(credentials);
       const { token: newToken, userDetails } = response;
 
@@ -70,9 +65,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setToken(newToken);
       localStorage.setItem('currentUser', JSON.stringify(userDetails));
       localStorage.setItem('token', newToken);
+      console.log('TOKEN: ', newToken);
     } catch (error) {
       console.error("Login failed:", error);
-      throw error; // Ném lỗi để form login xử lý
+      throw error; 
     }
   };
 

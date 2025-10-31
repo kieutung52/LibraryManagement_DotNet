@@ -1,4 +1,3 @@
-// Import các entity cần thiết
 import { User } from './typeEntity';
 
 // Dựa trên DTO/response/users/AuthenticationResponse.cs [cite: 4, 73]

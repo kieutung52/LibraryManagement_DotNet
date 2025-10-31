@@ -22,13 +22,11 @@ public class BookService : IBookService
     public async Task<BookResponse> CreateBookAsync(CreateBookRequest request)
     {
         var book = _mapper.Map<Book>(request);
-        // Khi tạo sách mới, số lượng có sẵn = tổng số lượng
         book.AvailableQuantity = request.TotalQuantity;
         
         _context.Books.Add(book);
         await _context.SaveChangesAsync();
         
-        // Load category để response có tên
         await _context.Entry(book).Reference(b => b.Category).LoadAsync();
         
         return _mapper.Map<BookResponse>(book);
@@ -47,7 +45,7 @@ public class BookService : IBookService
     public async Task<IEnumerable<BookResponse>> GetAllBooksAsync()
     {
         var books = await _context.Books
-            .Include(b => b.Category) // Lấy kèm thông tin Category
+            .Include(b => b.Category)
             .ToListAsync();
         return _mapper.Map<IEnumerable<BookResponse>>(books);
     }

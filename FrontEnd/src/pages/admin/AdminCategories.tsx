@@ -1,4 +1,3 @@
-// Tệp: ../FrontEnd/src/pages/admin/AdminCategories.tsx
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
@@ -129,7 +128,7 @@ export function AdminCategories() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto max-w-7xl space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1>Quản lý danh mục</h1>

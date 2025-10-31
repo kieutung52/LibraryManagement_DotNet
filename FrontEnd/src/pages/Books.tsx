@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'; // Thêm useMemo
+import React, { useEffect, useState, useMemo } from 'react'; 
 import { useSearchParams, Link } from 'react-router-dom';
 import { bookService } from '../services/bookService';
 import { Book } from '../types/typeEntity';
@@ -20,15 +20,15 @@ export const Books = () => {
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState<string | null>(null); 
 
-  // Đọc các tham số từ URL
+  
   const search = searchParams.get('search') || ''; 
   const categoryId = searchParams.get('categoryId') || 'all'; 
   const page = parseInt(searchParams.get('page') || '1'); 
-  const pageSize = 20; // Giữ nguyên
+  const pageSize = 20; 
   
-  // Xóa: const total = allBooks.length; (Đây là lỗi logic)
+  
 
-  // useEffect để tải dữ liệu ban đầu (Không đổi)
+  
   useEffect(() => {
     const fetchBooks = async () => {
       try {
@@ -55,14 +55,14 @@ export const Books = () => {
     fetchCategories();
   }, []); 
 
-  // Xóa: useEffect 
   
-  // === SỬA LOGIC: Dùng useMemo để tính toán danh sách đã lọc ===
-  // Việc này giúp tối ưu, chỉ tính toán lại khi allBooks, search, hoặc categoryId thay đổi
+  
+  
+  
   const filteredBooks = useMemo(() => {
     let books = allBooks;
 
-    // 1. Lọc theo tìm kiếm
+    
     if (search) { 
       books = books.filter(book =>
         book.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -70,30 +70,30 @@ export const Books = () => {
       );
     }
 
-    // 2. Lọc theo danh mục
+    
     if (categoryId && categoryId !== 'all') { 
       books = books.filter(book => book.categoryID === parseInt(categoryId));
     }
     
     return books;
-  }, [allBooks, search, categoryId]); // Phụ thuộc
+  }, [allBooks, search, categoryId]); 
 
-  // === SỬA LOGIC: Tính toán phân trang dựa trên filteredBooks ===
   
-  // 1. Sửa lỗi `total`: Phải tính total dựa trên số sách đã lọc
+  
+  
   const total = filteredBooks.length;
   
-  // 2. Tính totalPages dựa trên total mới
+  
   const totalPages = Math.ceil(total / pageSize); 
 
-  // 3. Dùng useMemo để lấy danh sách hiển thị (đã phân trang)
+  
   const displayedBooks = useMemo(() => {
     const startIndex = (page - 1) * pageSize; 
     const endIndex = startIndex + pageSize;
     return filteredBooks.slice(startIndex, endIndex); 
-  }, [filteredBooks, page, pageSize]); // Phụ thuộc
+  }, [filteredBooks, page, pageSize]); 
 
-  // Các hàm xử lý sự kiện (Không đổi)
+  
   const handleSearch = (value: string) => {
     setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
@@ -102,7 +102,7 @@ export const Books = () => {
       } else {
         newParams.delete('search');
       }
-      newParams.set('page', '1'); // Reset về trang 1 khi tìm kiếm
+      newParams.set('page', '1'); 
       return newParams;
     });
   }; 
@@ -115,7 +115,7 @@ export const Books = () => {
       } else {
         newParams.delete('categoryId');
       }
-      newParams.set('page', '1'); // Reset về trang 1 khi lọc
+      newParams.set('page', '1'); 
       return newParams;
     });
   }; 
@@ -128,7 +128,7 @@ export const Books = () => {
     });
   }; 
 
-  // Xóa: Logic tính toán `displayedBooks`  ở đây vì đã chuyển lên useMemo
+  
 
   return (
     <div className="space-y-6"> 
@@ -177,7 +177,7 @@ export const Books = () => {
 
       {/* Books Grid */}
       {loading ? (
-        // Skeleton (Không đổi)
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"> 
           {Array.from({ length: 8 }).map((_, i) => (
             <Card key={i}>
@@ -191,8 +191,8 @@ export const Books = () => {
             </Card>
           ))}
         </div>
-      ) : displayedBooks.length === 0 ? ( // Sửa: Dùng displayedBooks
-        // Không tìm thấy sách (Không đổi)
+      ) : displayedBooks.length === 0 ? ( 
+        
         <Card> 
           <CardContent className="pt-6 text-center">
             <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -203,7 +203,7 @@ export const Books = () => {
           </CardContent>
         </Card>
       ) : (
-        // Hiển thị sách (Sửa: dùng displayedBooks)
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {displayedBooks.map((book) => (
             <Card key={book.bookID} className="hover:shadow-lg transition-shadow">
@@ -234,7 +234,9 @@ export const Books = () => {
                   </div>
                   <Button size="sm" asChild>
                     <Link to={`/books/${book.bookID}`}> 
-                      Xem chi tiết
+                      <span className='text-white'>
+                        Xem chi tiết
+                      </span>
                     </Link>
                   </Button>
                 </div>

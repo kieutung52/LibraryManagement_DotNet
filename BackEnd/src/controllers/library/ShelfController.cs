@@ -8,7 +8,7 @@ namespace LibraryMangement.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "ADMIN")] // <-- CẬP NHẬT (thay vì [Authorize])
+[Authorize(Roles = "ADMIN")]
 public class ShelfController : ControllerBase
 {
     private readonly IShelfService _shelfService;
