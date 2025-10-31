@@ -13,4 +13,8 @@ public class CreateBookRequest
     public int? PublicationYear { get; set; }
     [Required, Range(0, int.MaxValue)]
     public int TotalQuantity { get; set; }
+
+    public string Description { get; set; } = string.Empty;
+    public string Publisher { get; set; } = string.Empty;
+    public string CoverImage { get; set; } = string.Empty;
 }

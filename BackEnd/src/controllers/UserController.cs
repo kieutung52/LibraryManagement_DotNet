@@ -102,9 +102,15 @@ public class UserController : ControllerBase
     }
     
     [HttpPut("{id}")]
-    [Authorize(Roles = "ADMIN")] // <-- CẬP NHẬT (thay vì [Authorize])
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> UpdateUser(Guid id, UpdateUserRequest model)
     {
+        if (!ModelState.IsValid)  // Add this
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            Console.WriteLine("Validation errors: {Errors}", string.Join(", ", errors));  // Log
+            return BadRequest(ApiResponse<string>.ErrorResponse(string.Join("; ", errors)));
+        }
         BooleanResponse success = await _userService.UpdateUserAsync(id, model);
         if(!success.is_successed) return NotFound(ApiResponse<BooleanResponse>.ErrorResponse("Không tìm thấy người dùng."));
         

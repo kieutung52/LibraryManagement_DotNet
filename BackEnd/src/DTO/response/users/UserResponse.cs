@@ -7,7 +7,7 @@ public class UserResponse
     public string Role { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
-    public AccountStatus Status { get; set; }
+    public string Status { get; set; } = string.Empty;
     public AdminData? AdminData { get; set; } // Mapped from Admin fields
     public UserData? UserData { get; set; } // Mapped from User fields
     public string CreatedAt { get; set; } = string.Empty; // ISO DateTime

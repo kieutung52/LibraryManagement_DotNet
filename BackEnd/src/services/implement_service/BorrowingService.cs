@@ -126,7 +126,7 @@ public class BorrowingService : IBorrowingService
         }
 
         borrowing.Status = BorrowingStatus.APPROVED;
-        borrowing.StaffID = staffId;
+        // borrowing.StaffID = staffId;
 
         await _context.SaveChangesAsync();
         return new BooleanResponse(true);
@@ -139,7 +139,7 @@ public class BorrowingService : IBorrowingService
             return new BooleanResponse(false);
 
         borrowing.Status = BorrowingStatus.REJECTED;
-        borrowing.StaffID = staffId;
+        // borrowing.StaffID = staffId;
 
         await _context.SaveChangesAsync();
         return new BooleanResponse(true);
