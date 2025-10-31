@@ -8,7 +8,7 @@ namespace LibraryMangement.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "ADMIN")] // <-- CẬP NHẬT (thay vì [Authorize])
 public class ShelfController : ControllerBase
 {
     private readonly IShelfService _shelfService;
@@ -34,7 +34,6 @@ public class ShelfController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> CreateShelf(CreateShelfRequest request)
     {
         var shelf = await _shelfService.CreateShelfAsync(request);
@@ -43,7 +42,6 @@ public class ShelfController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> UpdateShelf(int id, UpdateShelfRequest request)
     {
         var result = await _shelfService.UpdateShelfAsync(id, request);
@@ -52,7 +50,6 @@ public class ShelfController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> DeleteShelf(int id)
     {
         var result = await _shelfService.DeleteShelfAsync(id);
@@ -61,7 +58,6 @@ public class ShelfController : ControllerBase
     }
 
     [HttpPost("add-book")]
-    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> AddBookToShelf(AddBookToShelfRequest request)
     {
         var result = await _shelfService.AddBookToShelfAsync(request);

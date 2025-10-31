@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BackEnd.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,11 +24,11 @@ namespace BackEnd.Migrations
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "ACTIVE"),
                     StaffCode = table.Column<Guid>(type: "uuid", maxLength: 255, nullable: true),
                     Position = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
-                    LimitRenew = table.Column<int>(type: "integer", nullable: true),
-                    CountRenew = table.Column<int>(type: "integer", nullable: true),
-                    LimitBorrow = table.Column<int>(type: "integer", nullable: true),
-                    CountBorrow = table.Column<int>(type: "integer", nullable: true),
-                    CountViolations = table.Column<int>(type: "integer", nullable: true),
+                    LimitRenew = table.Column<int>(type: "integer", nullable: true, defaultValue: 3),
+                    CountRenew = table.Column<int>(type: "integer", nullable: true, defaultValue: 0),
+                    LimitBorrow = table.Column<int>(type: "integer", nullable: true, defaultValue: 5),
+                    CountBorrow = table.Column<int>(type: "integer", nullable: true, defaultValue: 0),
+                    CountViolations = table.Column<int>(type: "integer", nullable: true, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -60,12 +60,12 @@ namespace BackEnd.Migrations
                     DataAnalyticsID = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ReportDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CountBorrowings = table.Column<int>(type: "integer", nullable: false),
-                    CountUsersViolations = table.Column<int>(type: "integer", nullable: false),
-                    CountUsersVisited = table.Column<int>(type: "integer", nullable: false),
-                    CountUserBack = table.Column<int>(type: "integer", nullable: false),
-                    CountBorrowingsToExpire = table.Column<int>(type: "integer", nullable: false),
-                    CountBorrowingsRequestPending = table.Column<int>(type: "integer", nullable: false),
+                    CountBorrowings = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CountUsersViolations = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CountUsersVisited = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CountUserBack = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CountBorrowingsToExpire = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CountBorrowingsRequestPending = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -83,7 +83,8 @@ namespace BackEnd.Migrations
                     LocationName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "EMPTY"),
-                    Capacity = table.Column<int>(type: "integer", nullable: false),
+                    Capacity = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    CurrentBooks = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -133,9 +134,12 @@ namespace BackEnd.Migrations
                     Author = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     CategoryID = table.Column<int>(type: "integer", nullable: true),
                     PublicationYear = table.Column<int>(type: "integer", nullable: true),
-                    TotalQuantity = table.Column<int>(type: "integer", nullable: false),
-                    AvailableQuantity = table.Column<int>(type: "integer", nullable: false),
-                    BorrowedCount = table.Column<int>(type: "integer", nullable: false),
+                    TotalQuantity = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    AvailableQuantity = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    BorrowedCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    Description = table.Column<string>(type: "text", nullable: false, defaultValue: ""),
+                    Publisher = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false, defaultValue: ""),
+                    CoverImage = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false, defaultValue: ""),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -186,11 +190,11 @@ namespace BackEnd.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     BorrowingID = table.Column<int>(type: "integer", nullable: false),
                     BookID = table.Column<int>(type: "integer", nullable: false),
-                    QuantityBook = table.Column<int>(type: "integer", nullable: false),
+                    QuantityBook = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
                     DueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ReturnDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Status = table.Column<string>(type: "text", nullable: false, defaultValue: "BORROWING"),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
