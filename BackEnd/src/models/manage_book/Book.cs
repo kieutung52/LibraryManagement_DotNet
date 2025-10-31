@@ -18,6 +18,9 @@ public class Book : BaseEntity
     public int TotalQuantity { get; set; }
     public int AvailableQuantity { get; set; }
     public int BorrowedCount { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string Publisher { get; set; } = string.Empty;
+    public string CoverImage { get; set; } = string.Empty;
 
     public ICollection<BookLocation> BookLocations { get; set; } = new List<BookLocation>();
     public ICollection<BorrowingDetail> BorrowingDetails { get; set; } = new List<BorrowingDetail>();

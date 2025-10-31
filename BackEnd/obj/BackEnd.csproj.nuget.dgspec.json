@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/kieutung/Workspace/Projects/LibraryManagement_DotNet/BackEnd/BackEnd.csproj": {}
+    "/home/kieutung/WorkSpace/Project/WebDevelopment/LibraryManagement_DotNet/BackEnd/BackEnd.csproj": {}
   },
   "projects": {
-    "/home/kieutung/Workspace/Projects/LibraryManagement_DotNet/BackEnd/BackEnd.csproj": {
+    "/home/kieutung/WorkSpace/Project/WebDevelopment/LibraryManagement_DotNet/BackEnd/BackEnd.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/kieutung/Workspace/Projects/LibraryManagement_DotNet/BackEnd/BackEnd.csproj",
+        "projectUniqueName": "/home/kieutung/WorkSpace/Project/WebDevelopment/LibraryManagement_DotNet/BackEnd/BackEnd.csproj",
         "projectName": "BackEnd",
-        "projectPath": "/home/kieutung/Workspace/Projects/LibraryManagement_DotNet/BackEnd/BackEnd.csproj",
+        "projectPath": "/home/kieutung/WorkSpace/Project/WebDevelopment/LibraryManagement_DotNet/BackEnd/BackEnd.csproj",
         "packagesPath": "/home/kieutung/.nuget/packages/",
-        "outputPath": "/home/kieutung/Workspace/Projects/LibraryManagement_DotNet/BackEnd/obj/",
+        "outputPath": "/home/kieutung/WorkSpace/Project/WebDevelopment/LibraryManagement_DotNet/BackEnd/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/kieutung/.nuget/NuGet/NuGet.Config"
@@ -100,7 +100,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.117/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.121/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

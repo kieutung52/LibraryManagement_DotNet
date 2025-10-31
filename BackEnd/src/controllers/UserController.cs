@@ -75,7 +75,6 @@ public class UserController : ControllerBase
     public async Task<IActionResult> MyProfile()
     {
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-
         if (userIdClaim == null || string.IsNullOrEmpty(userIdClaim.Value))
         {
             return Unauthorized(ApiResponse<string>.ErrorResponse("Không tìm thấy thông tin người dùng trong token."));
@@ -103,18 +102,14 @@ public class UserController : ControllerBase
     }
     
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> UpdateUser(Guid id, UpdateUserRequest model)
     {
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out Guid currentUserId))
+        if (!ModelState.IsValid)
         {
-            return Unauthorized();
-        }
-
-        if (currentUserId != id && !User.IsInRole("ADMIN"))
-        {
-            return Forbid();
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            Console.WriteLine("Validation errors: {Errors}", string.Join(", ", errors));  // Log
+            return BadRequest(ApiResponse<string>.ErrorResponse(string.Join("; ", errors)));
         }
         BooleanResponse success = await _userService.UpdateUserAsync(id, model);
         if(!success.is_successed) return NotFound(ApiResponse<BooleanResponse>.ErrorResponse("Không tìm thấy người dùng."));

@@ -13,4 +13,8 @@ public class UpdateBookRequest
     public int TotalQuantity { get; set; }
     [Range(0, int.MaxValue)]
     public int AvailableQuantity { get; set; }
+
+    public string Description { get; set; } = string.Empty;
+    public string Publisher { get; set; } = string.Empty;
+    public string CoverImage { get; set; } = string.Empty;
 }

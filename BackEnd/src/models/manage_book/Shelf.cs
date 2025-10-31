@@ -12,6 +12,7 @@ public class Shelf : BaseEntity
     public string? Description { get; set; }
     public ShelfStatus Status { get; set; } = ShelfStatus.EMPTY;
     public int Capacity { get; set; }
+    public int CurrentBooks { get; set; }
 
     public ICollection<BookLocation> BookLocations { get; set; } = new List<BookLocation>();
 }
