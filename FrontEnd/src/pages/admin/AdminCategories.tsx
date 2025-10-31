@@ -1,158 +1,318 @@
-import React, { useEffect, useState, FormEvent } from 'react';
-import { categoryService } from '../../services/deployment/categoryService';
-import { CategoryResponse } from '../../types/typeEntity';
-import { CreateCategoryRequest, UpdateCategoryRequest } from '../../types/typeRequest';
+// Tệp: ../FrontEnd/src/pages/admin/AdminCategories.tsx
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '../../components/ui/dialog';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { toast } from 'sonner';
+import { categoryService } from '../../services/categoryService';
+import { bookService } from '../../services/bookService';
+import { Category } from '../../types/typeEntity';
 
-// Modal component (đơn giản)
-const Modal = ({ children, onClose }: { children: React.ReactNode, onClose: () => void }) => (
-  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-xl shadow-lg w-full max-w-lg">
-      <div className="p-6 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-black">&times;</button>
-        {children}
-      </div>
-    </div>
-  </div>
-);
-
-// Form Danh mục
-const CategoryForm = ({
-  category,
-  onSubmit,
-  onClose
-}: {
-  category?: CategoryResponse | null,
-  onSubmit: (data: CreateCategoryRequest | UpdateCategoryRequest) => Promise<void>,
-  onClose: () => void
-}) => {
-  const [name, setName] = useState(category?.name || '');
-  const [description, setDescription] = useState(category?.description || '');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const data = { name, description: description || undefined }; // Gửi undefined nếu rỗng
-      await onSubmit(data);
-    } catch (err) {
-      console.error(err);
-      alert(`Lỗi: ${err instanceof Error ? err.message : 'Lỗi không xác định'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-bold">{category ? 'Sửa danh mục' : 'Thêm danh mục mới'}</h2>
-      <input type="text" placeholder="Tên danh mục" value={name} onChange={e => setName(e.target.value)} required className="w-full p-2 border rounded" />
-      <textarea placeholder="Mô tả" value={description} onChange={e => setDescription(e.target.value)} className="w-full p-2 border rounded" />
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">Hủy</button>
-        <button type="submit" disabled={loading} className="px-4 py-2 bg-black text-white rounded-lg disabled:opacity-50">
-          {loading ? 'Đang lưu...' : 'Lưu'}
-        </button>
-      </div>
-    </form>
-  );
-};
-
-export const AdminCategories = () => {
-  const [categories, setCategories] = useState<CategoryResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<CategoryResponse | null>(null);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const data = await categoryService.getAllCategories();
-      setCategories(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+export function AdminCategories() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [bookCounts, setBookCounts] = useState<Record<number, number>>({});
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+  });
 
   useEffect(() => {
-    loadData();
+    loadCategories();
+    loadBookCounts();
   }, []);
 
-  const handleOpenCreate = () => {
-    setEditingCategory(null);
-    setShowModal(true);
+  const loadCategories = async () => {
+    try {
+      const response = await categoryService.getAllCategories();
+      setCategories(response);
+    } catch (error) {
+      toast.error('Không thể tải danh sách danh mục');
+    }
   };
 
-  const handleOpenEdit = (category: CategoryResponse) => {
+  const loadBookCounts = async () => {
+    try {
+      const response = await bookService.getAllBooks();
+      const counts: Record<number, number> = {};
+      response.forEach(book => {
+        if (book.categoryID !== undefined && book.categoryID !== null) {
+          counts[book.categoryID] = (counts[book.categoryID] || 0) + 1;
+        }
+      });
+      setBookCounts(counts);
+    } catch (error) {
+      console.error('Không thể tải số lượng sách');
+    }
+  };
+
+  const filteredCategories = categories.filter(category =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (category.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+    });
+    setEditingCategory(null);
+  };
+
+  const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    setShowModal(true);
+    setFormData({
+      name: category.name,
+      description: category.description || '',
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (editingCategory) {
+        await categoryService.updateCategory(editingCategory.categoryID, formData);
+        toast.success('Cập nhật danh mục thành công');
+      } else {
+        await categoryService.createCategory(formData);
+        toast.success('Thêm danh mục thành công');
+      }
+      
+      loadCategories();
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (error) {
+      toast.error(editingCategory ? 'Không thể cập nhật danh mục' : 'Không thể thêm danh mục');
+    }
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Bạn có chắc muốn xóa danh mục này? (Nếu danh mục có sách, sẽ bị lỗi)')) {
-      try {
-        await categoryService.deleteCategory(id);
-        await loadData();
-      } catch (err: any) {
-        alert(`Lỗi: ${err.message}`);
-      }
+    const bookCount = bookCounts[id] || 0;
+    if (bookCount > 0) {
+      toast.error(`Không thể xóa danh mục này vì còn ${bookCount} sách đang sử dụng`);
+      return;
+    }
+
+    if (!confirm('Bạn có chắc chắn muốn xóa danh mục này?')) return;
+    
+    try {
+      await categoryService.deleteCategory(id);
+      toast.success('Xóa danh mục thành công');
+      loadCategories();
+    } catch (error) {
+      toast.error('Không thể xóa danh mục');
     }
   };
-
-  const handleSubmitForm = async (data: CreateCategoryRequest | UpdateCategoryRequest) => {
-    if (editingCategory) {
-      await categoryService.updateCategory(editingCategory.categoryID, data as UpdateCategoryRequest);
-    } else {
-      await categoryService.createCategory(data as CreateCategoryRequest);
-    }
-    await loadData();
-    setShowModal(false);
-  };
-
-  if (loading) return <div>Đang tải...</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Quản lý Danh mục</h1>
-        <button onClick={handleOpenCreate} className="px-4 py-2 bg-black text-white rounded-lg">Thêm danh mục</button>
+        <div>
+          <h1>Quản lý danh mục</h1>
+          <p className="text-muted-foreground">Quản lý các danh mục sách trong thư viện</p>
+        </div>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={resetForm}>
+              <Plus className="w-4 h-4 mr-2" />
+              Thêm danh mục mới
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>
+                {editingCategory ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
+              </DialogTitle>
+              <DialogDescription>
+                {editingCategory ? 'Cập nhật thông tin danh mục sách' : 'Tạo danh mục sách mới'}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Tên danh mục *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Ví dụ: Văn học, Khoa học..."
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Mô tả</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Mô tả ngắn về danh mục này..."
+                  rows={3}
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Hủy
+                </Button>
+                <Button type="submit">
+                  {editingCategory ? 'Cập nhật' : 'Thêm danh mục'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Tên danh mục</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Mô tả</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {categories.map(cat => (
-              <tr key={cat.categoryID}>
-                <td className="p-4">{cat.name}</td>
-                <td className="p-4">{cat.description || '-'}</td>
-                <td className="p-4">
-                  <button onClick={() => handleOpenEdit(cat)} className="text-sm text-blue-600 mr-2">Sửa</button>
-                  <button onClick={() => handleDelete(cat.categoryID)} className="text-sm text-red-600">Xóa</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách danh mục</CardTitle>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Tìm kiếm danh mục..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tên danh mục</TableHead>
+                  <TableHead>Mô tả</TableHead>
+                  <TableHead>Số lượng sách</TableHead>
+                  <TableHead>Ngày tạo</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCategories.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      {searchTerm ? 'Không tìm thấy danh mục nào' : 'Chưa có danh mục nào'}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredCategories.map((category) => (
+                    <TableRow key={category.categoryID}>
+                      <TableCell>
+                        <div>
+                          <div>{category.name}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <div className="text-sm text-muted-foreground line-clamp-2">
+                          {category.description || 'Không có mô tả'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">
+                          {bookCounts[category.categoryID] || 0} sách
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {new Date().toLocaleDateString('vi-VN')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(category)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(category.categoryID)}
+                            className="text-destructive hover:text-destructive"
+                            disabled={bookCounts[category.categoryID] > 0}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)}>
-          <CategoryForm
-            category={editingCategory}
-            onSubmit={handleSubmitForm}
-            onClose={() => setShowModal(false)}
-          />
-        </Modal>
+      {categories.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {categories.map((category) => (
+            <Card key={category.categoryID} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <CardTitle className="text-lg">{category.name}</CardTitle>
+                  <Badge variant="secondary">
+                    {bookCounts[category.categoryID] || 0}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {category.description || 'Không có mô tả'}
+                </p>
+                <div className="flex justify-end mt-4 space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(category)}
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Sửa
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(category.categoryID)}
+                    className="text-destructive hover:text-destructive"
+                    disabled={bookCounts[category.categoryID] > 0}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Xóa
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );
-};
+}

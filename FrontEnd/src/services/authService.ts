@@ -1,7 +1,7 @@
 import apiClient from './apiClient';
 import { LoginRequest, RegisterRequest } from '@/types/typeRequest';
 import { AuthenticationResponse } from '@/types/typeResponse';
-import { UserResponse } from '@/types/typeEntity';
+import { User } from '@/types/typeEntity';
 import { ApiResponse } from '@/types/apiResponse';
 
 const login = async (credentials: LoginRequest): Promise<AuthenticationResponse> => {
@@ -19,8 +19,8 @@ const registerAdmin = async (data: RegisterRequest): Promise<AuthenticationRespo
   return response.data!;
 };
 
-const getCurrentUser = async (): Promise<UserResponse> => {
-  const response: ApiResponse<UserResponse> = await apiClient.get('/User/my-profile');
+const getCurrentUser = async (): Promise<User> => {
+  const response: ApiResponse<User> = await apiClient.get('/User/my-profile');
   return response.data!;
 };
 

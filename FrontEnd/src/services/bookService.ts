@@ -1,20 +1,20 @@
 import apiClient from './apiClient';
 import { CreateBookRequest, UpdateBookRequest } from '@/types/typeRequest';
-import { BookResponse } from '@/types/typeEntity';
+import { Book } from '@/types/typeEntity';
 import { ApiResponse, BooleanResponse } from '@/types/apiResponse';
 
-const getAllBooks = async (): Promise<BookResponse[]> => {
-  const response: ApiResponse<BookResponse[]> = await apiClient.get('/Book');
+const getAllBooks = async (): Promise<Book[]> => {
+  const response: ApiResponse<Book[]> = await apiClient.get('/Book');
   return response.data!;
 };
 
-const getBookById = async (id: number): Promise<BookResponse> => {
-  const response: ApiResponse<BookResponse> = await apiClient.get(`/Book/${id}`);
+const getBookById = async (id: number): Promise<Book> => {
+  const response: ApiResponse<Book> = await apiClient.get(`/Book/${id}`);
   return response.data!;
 };
 
-const createBook = async (data: CreateBookRequest): Promise<BookResponse> => {
-  const response: ApiResponse<BookResponse> = await apiClient.post('/Book', data);
+const createBook = async (data: CreateBookRequest): Promise<Book> => {
+  const response: ApiResponse<Book> = await apiClient.post('/Book', data);
   return response.data!;
 };
 

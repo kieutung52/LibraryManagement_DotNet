@@ -1,20 +1,20 @@
 import apiClient from './apiClient';
 import { CreateUserRequest, UpdateUserRequest } from '@/types/typeRequest';
-import { UserResponse } from '@/types/typeEntity';
+import { User } from '@/types/typeEntity';
 import { ApiResponse, BooleanResponse } from '@/types/apiResponse';
 
-const getAllUsers = async (): Promise<UserResponse[]> => {
-  const response: ApiResponse<UserResponse[]> = await apiClient.get('/User');
+const getAllUsers = async (): Promise<User[]> => {
+  const response: ApiResponse<User[]> = await apiClient.get('/User');
   return response.data!;
 };
 
-const getUserById = async (id: string): Promise<UserResponse> => {
-  const response: ApiResponse<UserResponse> = await apiClient.get(`/User/${id}`);
+const getUserById = async (id: string): Promise<User> => {
+  const response: ApiResponse<User> = await apiClient.get(`/User/${id}`);
   return response.data!;
 };
 
-const createUser = async (data: CreateUserRequest): Promise<UserResponse> => {
-  const response: ApiResponse<UserResponse> = await apiClient.post('/User', data);
+const createUser = async (data: CreateUserRequest): Promise<User> => {
+  const response: ApiResponse<User> = await apiClient.post('/User', data);
   return response.data!;
 };
 

@@ -4,22 +4,22 @@ import {
   UpdateShelfRequest,
   AddBookToShelfRequest,
 } from '@/types/typeRequest';
-import { ShelfResponse } from '@/types/typeEntity';
+import { ShelfLocation } from '@/types/typeEntity';
 import { ApiResponse, BooleanResponse } from '@/types/apiResponse';
 import { AddBookToShelfResponse } from '@/types/typeResponse';
 
-const getAllShelves = async (): Promise<ShelfResponse[]> => {
-  const response: ApiResponse<ShelfResponse[]> = await apiClient.get('/Shelf');
+const getAllShelves = async (): Promise<ShelfLocation[]> => {
+  const response: ApiResponse<ShelfLocation[]> = await apiClient.get('/Shelf');
   return response.data!;
 };
 
-const getShelfById = async (id: number): Promise<ShelfResponse> => {
-  const response: ApiResponse<ShelfResponse> = await apiClient.get(`/Shelf/${id}`);
+const getShelfById = async (id: number): Promise<ShelfLocation> => {
+  const response: ApiResponse<ShelfLocation> = await apiClient.get(`/Shelf/${id}`);
   return response.data!;
 };
 
-const createShelf = async (data: CreateShelfRequest): Promise<ShelfResponse> => {
-  const response: ApiResponse<ShelfResponse> = await apiClient.post('/Shelf', data);
+const createShelf = async (data: CreateShelfRequest): Promise<ShelfLocation> => {
+  const response: ApiResponse<ShelfLocation> = await apiClient.post('/Shelf', data);
   return response.data!;
 };
 

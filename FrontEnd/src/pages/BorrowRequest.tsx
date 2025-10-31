@@ -1,111 +1,78 @@
-import React, { useState, useEffect } from 'react';
+// Tệp: ../FrontEnd/src/pages/BorrowRequest.tsx
+import React, { useState } from 'react';
+import { borrowingService } from '../services/borrowingService';
 import { useAuth } from '../contexts/AuthContext';
-import { bookService } from '../services/deployment/bookService';
-import { borrowingService } from '../services/deployment/borrowingService';
-import { BookResponse } from '../types/typeEntity';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { toast } from 'sonner';
 import { CreateBorrowingRequest, BorrowingBookRequest } from '../types/typeRequest';
-import { useNavigate } from 'react-router-dom';
 
-export const BorrowRequest = () => {
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const [allBooks, setAllBooks] = useState<BookResponse[]>([]);
-  const [selectedBooks, setSelectedBooks] = useState<Map<number, BorrowingBookRequest>>(new Map());
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function BorrowRequest() {
+  const { user } = useAuth();
+  const [books, setBooks] = useState<BorrowingBookRequest[]>([{ bookID: 0, quantity: 1 }]);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-    bookService.getAllBooks()
-      .then(data => setAllBooks(data.filter(b => b.availableQuantity > 0)))
-      .catch(() => setError('Không thể tải danh sách sách.'));
-  }, [isAuthenticated, navigate]);
+  const handleAddBook = () => {
+    setBooks([...books, { bookID: 0, quantity: 1 }]);
+  };
 
-  const handleSelectBook = (book: BookResponse) => {
-    const newSelection = new Map(selectedBooks);
-    if (newSelection.has(book.bookID)) {
-      newSelection.delete(book.bookID);
-    } else {
-      if (newSelection.size >= (user?.userData?.limitBorrow || 5)) {
-        alert(`Bạn chỉ được mượn tối đa ${user?.userData?.limitBorrow || 5} cuốn.`);
-        return;
-      }
-      newSelection.set(book.bookID, { bookID: book.bookID, quantity: 1 }); // Mặc định số lượng là 1
-    }
-    setSelectedBooks(newSelection);
+  const handleBookChange = (index: number, field: 'bookID' | 'quantity', value: number) => {
+    const newBooks = [...books];
+    newBooks[index] = { ...newBooks[index], [field]: value };
+    setBooks(newBooks);
   };
 
   const handleSubmit = async () => {
-    if (!user || selectedBooks.size === 0) return;
+    if (!user || books.some(b => b.bookID === 0)) {
+      toast.error('Vui lòng chọn sách hợp lệ và đăng nhập');
+      return;
+    }
 
-    setLoading(true);
-    setError(null);
     try {
-      const requestData: CreateBorrowingRequest = {
+      const request: CreateBorrowingRequest = {
         accountID: user.accountID,
-        books: Array.from(selectedBooks.values()),
+        books
       };
-      await borrowingService.createBorrowing(requestData);
-      alert('Gửi yêu cầu mượn thành công!');
-      navigate('/my-borrowings');
-    } catch (err: any) {
-      setError(err.message || 'Gửi yêu cầu thất bại.');
-    } finally {
-      setLoading(false);
+      await borrowingService.createBorrowing(request);
+      toast.success('Yêu cầu mượn sách đã được gửi');
+      setBooks([{ bookID: 0, quantity: 1 }]);
+    } catch (error) {
+      toast.error('Không thể gửi yêu cầu mượn sách');
     }
   };
 
-  const selectedArray = Array.from(selectedBooks.keys());
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Yêu cầu mượn sách</h1>
-      {error && <p className="text-red-500">{error}</p>}
-      
-      <div className="p-4 bg-white rounded-xl shadow-lg">
-        <h2 className="font-semibold mb-2">Sách đã chọn ({selectedBooks.size})</h2>
-        <div className="space-y-2 mb-4">
-          {selectedArray.length === 0 && <p className="text-sm text-gray-500">Chưa chọn sách nào.</p>}
-          {selectedArray.map(bookID => {
-            const book = allBooks.find(b => b.bookID === bookID);
-            return (
-              <div key={bookID} className="flex justify-between items-center text-sm">
-                <span>{book?.title}</span>
-                <button onClick={() => handleSelectBook(book!)} className="text-red-500 text-xs">Xóa</button>
-              </div>
-            );
-          })}
-        </div>
-        <button
-          onClick={handleSubmit}
-          disabled={loading || selectedBooks.size === 0}
-          className="w-full px-4 py-2 font-medium text-white bg-black rounded-lg hover:bg-gray-800 disabled:opacity-50"
-        >
-          {loading ? 'Đang gửi...' : `Gửi yêu cầu (${selectedBooks.size} sách)`}
-        </button>
-      </div>
-
-      <div className="p-4 bg-white rounded-xl shadow-lg">
-        <h2 className="font-semibold mb-4">Chọn sách (Có sẵn)</h2>
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {allBooks.map(book => {
-            const isSelected = selectedBooks.has(book.bookID);
-            return (
-              <div 
-                key={book.bookID}
-                onClick={() => handleSelectBook(book)}
-                className={`p-3 border rounded-lg cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-500' : 'hover:bg-gray-50'}`}
-              >
-                <h3 className="font-medium">{book.title}</h3>
-                <p className="text-sm text-gray-600">{book.author}</p>
-                <p className="text-xs text-gray-500">{book.categoryName}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+    <div className="max-w-md mx-auto space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Yêu cầu mượn sách</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {books.map((book, index) => (
+            <div key={index} className="space-y-2">
+              <Input
+                type="number"
+                placeholder="ID sách"
+                value={book.bookID}
+                onChange={(e) => handleBookChange(index, 'bookID', parseInt(e.target.value) || 0)}
+              />
+              <Input
+                type="number"
+                placeholder="Số lượng"
+                value={book.quantity}
+                onChange={(e) => handleBookChange(index, 'quantity', parseInt(e.target.value) || 1)}
+                min={1}
+              />
+            </div>
+          ))}
+          <Button onClick={handleAddBook} variant="outline" className="w-full">
+            Thêm sách khác
+          </Button>
+          <Button onClick={handleSubmit} className="w-full">
+            Gửi yêu cầu
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
-};
+}

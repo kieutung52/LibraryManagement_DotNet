@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { authService } from '../services/deployment/authService';
+import { authService } from '../services/authService';
 import { useNavigate, Link } from 'react-router-dom';
 import { RegisterRequest } from '@/types/typeRequest';
 

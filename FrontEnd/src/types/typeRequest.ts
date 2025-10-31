@@ -27,6 +27,9 @@ export interface UpdateUserRequest {
   role: string;
   email: string;
   status?: AccountStatus | null;
+  limitBorrow?: number;
+  limitRenew?: number;
+  countViolations?: number;
 }
 
 // Dựa trên DTO/request/library/books/CreateBookRequest.cs [cite: 132-136]

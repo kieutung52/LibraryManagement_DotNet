@@ -1,11 +1,32 @@
+// Tệp: ../FrontEnd/src/pages/BookDetail.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { bookService } from '../services/deployment/bookService';
-import { BookResponse } from '../types/typeEntity';
+import { bookService } from '../services/bookService';
+import { Book } from '../types/typeEntity';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Separator } from '../components/ui/separator';
+import { Skeleton } from '../components/ui/skeleton';
+import { Alert, AlertDescription } from '../components/ui/alert';
+import { 
+  ArrowLeft, 
+  BookOpen, 
+  User, 
+  Calendar, 
+  Hash, 
+  FolderOpen, 
+  CheckCircle, 
+  XCircle,
+  AlertTriangle 
+} from 'lucide-react';
+import { categoryService } from '../services/categoryService';
+import { Category } from '../types/typeEntity';
 
 export const BookDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [book, setBook] = useState<BookResponse | null>(null);
+  const [book, setBook] = useState<Book | null>(null);
+  const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,6 +37,16 @@ export const BookDetail = () => {
         setLoading(true);
         const data = await bookService.getBookById(Number(id));
         setBook(data);
+
+        // Fetch category details if categoryID exists
+        if (data.categoryID) {
+          try {
+            const catData = await categoryService.getCategoryById(data.categoryID);
+            setCategory(catData);
+          } catch (catErr) {
+            console.error('Failed to fetch category');
+          }
+        }
       } catch (err: any) {
         setError(err.message || 'Không tìm thấy sách');
       } finally {
@@ -25,54 +56,174 @@ export const BookDetail = () => {
     fetchBook();
   }, [id]);
 
-  if (loading) return <div>Đang tải...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!book) return <div>Không tìm thấy sách.</div>;
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-8 w-64" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <Card className="h-full">
+              <CardHeader>
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-32 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+          <div>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-24 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const isAvailable = book.availableQuantity > 0;
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <Alert variant="destructive">
+          <AlertTriangle className="w-4 h-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  if (!book) return null;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Link to="/books" className="text-sm hover:underline mb-4 inline-block">&larr; Quay lại danh sách</Link>
-      <div className="p-6 bg-white rounded-xl shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
-        <p className="text-xl text-gray-700 mb-4">{book.author}</p>
-        
-        <div className="grid grid-cols-2 gap-4 text-sm mb-6">
-          <div className="pb-2">
-            <span className="text-gray-500">ISBN</span>
-            <p className="font-medium">{book.isbn}</p>
-          </div>
-          <div className="pb-2">
-            <span className="text-gray-500">Năm XB</span>
-            <p className="font-medium">{book.publicationYear || 'N/A'}</p>
-          </div>
-          <div className="pb-2">
-            <span className="text-gray-500">Danh mục</span>
-            <p className="font-medium">{book.categoryName || 'N/A'}</p>
-          </div>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Back Button */}
+      <div className="flex items-center space-x-4">
+        <Button variant="outline" asChild>
+          <Link to="/books">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Quay lại
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-2xl">{book.title}</h1>
+          <p className="text-muted-foreground">Chi tiết thông tin sách</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Book Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BookOpen className="w-5 h-5" />
+                <span>Thông tin sách</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Tên sách</label>
+                  <p className="text-lg">{book.title}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Tác giả</label>
+                  <p className="text-lg flex items-center">
+                    <User className="w-4 h-4 mr-2" />
+                    {book.author}
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Năm xuất bản</label>
+                  <p className="text-lg flex items-center">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {book.publicationYear || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">ISBN</label>
+                  <p className="text-lg flex items-center">
+                    <Hash className="w-4 h-4 mr-2" />
+                    {book.isbn}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Danh mục</label>
+                <div className="flex items-center space-x-2 mt-1">
+                  <FolderOpen className="w-4 h-4" />
+                  <Badge variant="secondary">{book.categoryName || category?.name || 'N/A'}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">{category?.description || ''}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Copies List - Placeholder */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Danh sách bản sao</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Placeholder for book copies list</p>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="flex items-center gap-6 p-4 bg-gray-50 rounded-lg">
-          <div>
-            <span className="text-gray-500 text-sm">Tổng số</span>
-            <p className="text-2xl font-bold">{book.totalQuantity}</p>
-          </div>
-          <div>
-            <span className="text-gray-500 text-sm">Có sẵn</span>
-            <p className={`text-2xl font-bold ${isAvailable ? 'text-green-600' : 'text-red-500'}`}>
-              {book.availableQuantity}
-            </p>
-          </div>
-        </div>
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Availability Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tình trạng</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <div className="text-3xl text-primary mb-2">
+                  {book.availableQuantity}
+                </div>
+                <div className="text-sm text-muted-foreground">Số sách có sẵn</div>
+              </div>
+              
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <div className="text-3xl text-muted-foreground mb-2">
+                  {book.totalQuantity}
+                </div>
+                <div className="text-sm text-muted-foreground">Tổng số sách</div>
+              </div>
 
-        <button
-          disabled={!isAvailable}
-          className="w-full mt-6 px-4 py-3 font-medium text-white bg-black rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isAvailable ? 'Yêu cầu mượn' : 'Đã hết sách'}
-        </button>
+              {book.availableQuantity > 0 ? (
+                <Button className="w-full" asChild>
+                  <Link to="/borrowings/request">
+                    Mượn sách này
+                  </Link>
+                </Button>
+              ) : (
+                <Button className="w-full" disabled variant="outline">
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Hiện không có sẵn
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
-};
+}

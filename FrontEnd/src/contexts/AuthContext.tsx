@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { UserResponse } from '../types/typeEntity'; // Sửa: Dùng UserResponse
-import { authService } from '../services/deployment/authService'; // Sửa: Dùng service thật
+import { User } from '../types/typeEntity';
+import { authService } from '../services/authService';
 import { LoginRequest } from '@/types/typeRequest';
 
 interface AuthContextType {
-  user: UserResponse | null;
+  user: User | null;
   token: string | null;
-  login: (credentials: LoginRequest) => Promise<void>; // Sửa: Dùng service thật
+  login: (credentials: LoginRequest) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -28,7 +28,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<UserResponse | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 

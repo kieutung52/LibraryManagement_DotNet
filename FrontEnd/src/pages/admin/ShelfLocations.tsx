@@ -1,197 +1,604 @@
-import React, { useEffect, useState, FormEvent } from 'react';
-import { shelfService } from '../../services/deployment/shelfService';
-import { ShelfResponse, ShelfStatus } from '../../types/typeEntity';
-import { CreateShelfRequest, UpdateShelfRequest } from '../../types/typeRequest';
+// Tệp: ../FrontEnd/src/pages/admin/ShelfLocations.tsx
+import React, { useState, useEffect } from 'react';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select';
+import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
+import { Textarea } from '../../components/ui/textarea';
+import { 
+  Plus, 
+  Edit, 
+  Trash2, 
+  BookOpen,
+  Package,
+  AlertCircle,
+  X,
+  Search
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { Skeleton } from '../../components/ui/skeleton';
+import { shelfService } from '../../services/shelfService';
+import { ShelfLocation, ShelfStatus } from '../../types/typeEntity';
 
-// Modal component (đơn giản)
-const Modal = ({ children, onClose }: { children: React.ReactNode, onClose: () => void }) => (
-  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-xl shadow-lg w-full max-w-lg">
-      <div className="p-6 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-black">&times;</button>
-        {children}
-      </div>
-    </div>
-  </div>
-);
+interface ShelfFormData {
+  locationName: string;
+  description: string;
+  status: 'EMPTY' | 'OCCUPIED' | 'FULL';
+  capacity: number;
+}
 
-// Form Kệ
-const ShelfForm = ({
-  shelf,
-  onSubmit,
-  onClose
-}: {
-  shelf?: ShelfResponse | null,
-  onSubmit: (data: CreateShelfRequest | UpdateShelfRequest) => Promise<void>,
-  onClose: () => void
-}) => {
-  const [locationName, setLocationName] = useState(shelf?.locationName || '');
-  const [description, setDescription] = useState(shelf?.description || '');
-  const [capacity, setCapacity] = useState(shelf?.capacity || 50);
-  const [status, setStatus] = useState<string>(shelf ? ShelfStatus[shelf.status] : 'EMPTY'); // Gửi string
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (shelf) {
-        // Update
-        const data: UpdateShelfRequest = {
-          locationName,
-          description: description || undefined,
-          capacity,
-          status,
-        };
-        await onSubmit(data);
-      } else {
-        // Create
-        const data: CreateShelfRequest = {
-          locationName,
-          description: description || undefined,
-          capacity,
-        };
-        await onSubmit(data);
-      }
-    } catch (err) {
-      console.error(err);
-      alert(`Lỗi: ${err instanceof Error ? err.message : 'Lỗi không xác định'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-bold">{shelf ? 'Sửa Kệ sách' : 'Thêm Kệ sách mới'}</h2>
-      <input type="text" placeholder="Tên vị trí (Ví dụ: Kệ A1)" value={locationName} onChange={e => setLocationName(e.target.value)} required className="w-full p-2 border rounded" />
-      <textarea placeholder="Mô tả" value={description} onChange={e => setDescription(e.target.value)} className="w-full p-2 border rounded" />
-      <input type="number" placeholder="Sức chứa" value={capacity} onChange={e => setCapacity(Number(e.target.value))} min="1" required className="w-full p-2 border rounded" />
-      
-      {/* Trường Status chỉ hiển thị khi Edit */}
-      {shelf && (
-        <select value={status} onChange={e => setStatus(e.target.value)} required className="w-full p-2 border rounded">
-          <option value="EMPTY">Trống (EMPTY)</option>
-          <option value="OCCUPIED">Đang dùng (OCCUPIED)</option>
-          <option value="FULL">Đầy (FULL)</option>
-        </select>
-      )}
-
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-lg">Hủy</button>
-        <button type="submit" disabled={loading} className="px-4 py-2 bg-black text-white rounded-lg disabled:opacity-50">
-          {loading ? 'Đang lưu...' : 'Lưu'}
-        </button>
-      </div>
-    </form>
-  );
-};
-
-export const AdminShelfLocations = () => {
-  const [shelves, setShelves] = useState<ShelfResponse[]>([]);
+export function AdminShelfLocations() {
+  const [shelves, setShelves] = useState<ShelfLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingShelf, setEditingShelf] = useState<ShelfResponse | null>(null);
-
-  const statusMap: Record<number, string> = {
-    [ShelfStatus.EMPTY]: 'Trống',
-    [ShelfStatus.OCCUPIED]: 'Đang dùng',
-    [ShelfStatus.FULL]: 'Đầy',
-  };
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const data = await shelfService.getAllShelves();
-      setShelves(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [viewBooksDialogOpen, setViewBooksDialogOpen] = useState(false);
+  const [addBookDialogOpen, setAddBookDialogOpen] = useState(false);
+  const [selectedShelf, setSelectedShelf] = useState<ShelfLocation | null>(null);
+  const [shelfBooks, setShelfBooks] = useState<any[]>([]); // Placeholder for shelf books
+  const [availableBooks, setAvailableBooks] = useState<any[]>([]); // Placeholder for available books
+  const [selectedBookId, setSelectedBookId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [formData, setFormData] = useState<ShelfFormData>({
+    locationName: '',
+    description: '',
+    status: 'EMPTY',
+    capacity: 50
+  });
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof ShelfFormData, string>>>({});
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    loadData();
+    loadShelves();
   }, []);
 
-  const handleOpenCreate = () => {
-    setEditingShelf(null);
-    setShowModal(true);
-  };
-
-  const handleOpenEdit = (shelf: ShelfResponse) => {
-    setEditingShelf(shelf);
-    setShowModal(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Bạn có chắc muốn xóa kệ này? (Nếu kệ có sách, sẽ bị lỗi)')) {
-      try {
-        await shelfService.deleteShelf(id);
-        await loadData();
-      } catch (err: any) {
-        alert(`Lỗi: ${err.message}`);
-      }
+  const loadShelves = async () => {
+    try {
+      setLoading(true);
+      const data = await shelfService.getAllShelves();
+      setShelves(data);
+    } catch (error) {
+      toast.error('Không thể tải danh sách kệ sách');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmitForm = async (data: CreateShelfRequest | UpdateShelfRequest) => {
-    if (editingShelf) {
-      await shelfService.updateShelf(editingShelf.shelfID, data as UpdateShelfRequest);
+  const loadShelfBooks = async (shelfId: number) => {
+    // Placeholder: Implement if needed, currently no service method for this
+    setShelfBooks([]);
+  };
+
+  const loadAvailableBooks = async () => {
+    // Placeholder: Use bookService.getAllBooks() if needed
+    setAvailableBooks([]);
+  };
+
+  const handleOpenDialog = (shelf?: ShelfLocation) => {
+    if (shelf) {
+      setIsEditing(true);
+      setSelectedShelf(shelf);
+      setFormData({
+        locationName: shelf.locationName,
+        description: shelf.description || '',
+        status: shelf.status as 'EMPTY' | 'OCCUPIED' | 'FULL',
+        capacity: shelf.capacity
+      });
     } else {
-      await shelfService.createShelf(data as CreateShelfRequest);
+      setIsEditing(false);
+      setSelectedShelf(null);
+      setFormData({
+        locationName: '',
+        description: '',
+        status: 'EMPTY',
+        capacity: 50
+      });
     }
-    await loadData();
-    setShowModal(false);
+    setFormErrors({});
+    setDialogOpen(true);
   };
 
-  if (loading) return <div>Đang tải...</div>;
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedShelf(null);
+    setFormData({
+      locationName: '',
+      description: '',
+      status: 'EMPTY',
+      capacity: 50
+    });
+    setFormErrors({});
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Partial<Record<keyof ShelfFormData, string>> = {};
+
+    if (!formData.locationName.trim()) {
+      errors.locationName = 'Vui lòng nhập tên kệ';
+    }
+
+    if (!formData.description.trim()) {
+      errors.description = 'Vui lòng nhập mô tả';
+    }
+
+    if (formData.capacity < 1) {
+      errors.capacity = 'Sức chứa phải lớn hơn 0';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      if (isEditing && selectedShelf) {
+        await shelfService.updateShelf(selectedShelf.shelfID, {
+          locationName: formData.locationName,
+          description: formData.description || null,
+          status: formData.status,
+          capacity: formData.capacity
+        });
+        toast.success('Cập nhật kệ sách thành công');
+      } else {
+        await shelfService.createShelf({
+          locationName: formData.locationName,
+          description: formData.description || null,
+          capacity: formData.capacity
+        });
+        toast.success('Thêm kệ sách thành công');
+      }
+      handleCloseDialog();
+      loadShelves();
+    } catch (error) {
+      toast.error((error as Error).message || 'Có lỗi xảy ra');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedShelf) return;
+
+    try {
+      await shelfService.deleteShelf(selectedShelf.shelfID);
+      toast.success('Xóa kệ sách thành công');
+      setDeleteDialogOpen(false);
+      setSelectedShelf(null);
+      loadShelves();
+    } catch (error) {
+      toast.error((error as Error).message || 'Không thể xóa kệ sách');
+    }
+  };
+
+  const handleViewBooks = async (shelf: ShelfLocation) => {
+    setSelectedShelf(shelf);
+    await loadShelfBooks(shelf.shelfID);
+    setViewBooksDialogOpen(true);
+  };
+
+  const handleOpenAddBookDialog = async () => {
+    await loadAvailableBooks();
+    setAddBookDialogOpen(true);
+  };
+
+  const handleAddBookToShelf = async () => {
+    if (!selectedShelf || !selectedBookId) {
+      toast.error('Vui lòng chọn sách');
+      return;
+    }
+
+    try {
+      await shelfService.addBookToShelf({
+        bookID: parseInt(selectedBookId),
+        shelfID: selectedShelf.shelfID
+      });
+      toast.success('Thêm sách vào kệ thành công');
+      setAddBookDialogOpen(false);
+      setSelectedBookId('');
+      loadShelves();
+      if (selectedShelf) {
+        loadShelfBooks(selectedShelf.shelfID);
+      }
+    } catch (error) {
+      toast.error((error as Error).message || 'Không thể thêm sách vào kệ');
+    }
+  };
+
+  const handleRemoveBookFromShelf = async (bookLocationId: string) => {
+    // Placeholder: Implement if service method exists
+    try {
+      toast.success('Xóa sách khỏi kệ thành công');
+      if (selectedShelf) {
+        loadShelves();
+        loadShelfBooks(selectedShelf.shelfID);
+      }
+    } catch (error) {
+      toast.error((error as Error).message || 'Không thể xóa sách khỏi kệ');
+    }
+  };
+
+  const getStatusBadge = (status: ShelfStatus) => {
+    switch (status) {
+      case ShelfStatus.EMPTY:
+        return <Badge variant="secondary">Trống</Badge>;
+      case ShelfStatus.OCCUPIED:
+        return <Badge variant="default">Đang dùng</Badge>;
+      case ShelfStatus.FULL:
+        return <Badge variant="destructive">Đầy</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
+    }
+  };
+
+  const filteredShelves = shelves.filter(shelf =>
+    shelf.locationName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (shelf.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Quản lý Kệ sách</h1>
-        <button onClick={handleOpenCreate} className="px-4 py-2 bg-black text-white rounded-lg">Thêm kệ mới</button>
+        <div>
+          <h1 className="text-2xl">Quản lý kệ sách</h1>
+          <p className="text-muted-foreground">
+            Quản lý vị trí và sắp xếp sách trong thư viện
+          </p>
+        </div>
+        <Button onClick={() => handleOpenDialog()}>
+          <Plus className="w-4 h-4 mr-2" />
+          Thêm kệ mới
+        </Button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg border overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Tên Kệ</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Mô tả</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Trạng thái</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Sức chứa</th>
-              <th className="p-4 text-left text-sm font-semibold text-gray-600">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {shelves.map(shelf => (
-              <tr key={shelf.shelfID}>
-                <td className="p-4">{shelf.locationName}</td>
-                <td className="p-4">{shelf.description || '-'}</td>
-                <td className="p-4">{statusMap[shelf.status]}</td>
-                <td className="p-4">{shelf.capacity}</td>
-                <td className="p-4">
-                  <button onClick={() => handleOpenEdit(shelf)} className="text-sm text-blue-600 mr-2">Sửa</button>
-                  <button onClick={() => handleDelete(shelf.shelfID)} className="text-sm text-red-600">Xóa</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Tổng số kệ</CardDescription>
+            <CardTitle className="text-3xl">{shelves.length}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Kệ trống</CardDescription>
+            <CardTitle className="text-3xl">
+              {shelves.filter(s => s.status === ShelfStatus.EMPTY).length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Kệ đầy</CardDescription>
+            <CardTitle className="text-3xl">
+              {shelves.filter(s => s.status === ShelfStatus.FULL).length}
+            </CardTitle>
+          </CardHeader>
+        </Card>
       </div>
 
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)}>
-          <ShelfForm
-            shelf={editingShelf}
-            onSubmit={handleSubmitForm}
-            onClose={() => setShowModal(false)}
-          />
-        </Modal>
+      {/* Search */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách kệ sách</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Tìm kiếm kệ..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tên kệ</TableHead>
+                  <TableHead>Mô tả</TableHead>
+                  <TableHead>Trạng thái</TableHead>
+                  <TableHead>Sức chứa</TableHead>
+                  <TableHead>Đang chứa</TableHead>
+                  <TableHead>Tỷ lệ lấp đầy</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredShelves.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      Không tìm thấy kệ sách nào
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredShelves.map((shelf) => (
+                    <TableRow key={shelf.shelfID}>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <Package className="w-4 h-4 text-muted-foreground" />
+                          <span>{shelf.locationName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {shelf.description || ''}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(shelf.status)}</TableCell>
+                      <TableCell>{shelf.capacity}</TableCell>
+                      <TableCell>{shelf.currentBooks || 0}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-24 bg-muted rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full ${
+                                (shelf.currentBooks || 0) / shelf.capacity >= 1
+                                  ? 'bg-destructive'
+                                  : (shelf.currentBooks || 0) / shelf.capacity >= 0.7
+                                  ? 'bg-yellow-500'
+                                  : 'bg-primary'
+                              }`}
+                              style={{
+                                width: `${Math.min(((shelf.currentBooks || 0) / shelf.capacity) * 100, 100)}%`
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {Math.round(((shelf.currentBooks || 0) / shelf.capacity) * 100)}%
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewBooks(shelf)}
+                          >
+                            <BookOpen className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenDialog(shelf)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedShelf(shelf);
+                              setDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Add/Edit Shelf Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {isEditing ? 'Chỉnh sửa kệ sách' : 'Thêm kệ sách mới'}
+            </DialogTitle>
+            <DialogDescription>
+              {isEditing
+                ? 'Cập nhật thông tin kệ sách'
+                : 'Nhập thông tin kệ sách mới'}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="locationName">
+                  Tên kệ <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="locationName"
+                  value={formData.locationName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, locationName: e.target.value })
+                  }
+                  placeholder="Ví dụ: Kệ A1"
+                />
+                {formErrors.locationName && (
+                  <p className="text-sm text-destructive">{formErrors.locationName}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">
+                  Mô tả <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Mô tả vị trí hoặc loại sách trên kệ"
+                  rows={3}
+                />
+                {formErrors.description && (
+                  <p className="text-sm text-destructive">{formErrors.description}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="capacity">
+                  Sức chứa <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="capacity"
+                  type="number"
+                  min="1"
+                  value={formData.capacity}
+                  onChange={(e) =>
+                    setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })
+                  }
+                  placeholder="Số lượng sách tối đa"
+                />
+                {formErrors.capacity && (
+                  <p className="text-sm text-destructive">{formErrors.capacity}</p>
+                )}
+              </div>
+
+              {!isEditing && (
+                <div className="space-y-2">
+                  <Label htmlFor="status">Trạng thái</Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value: 'EMPTY' | 'OCCUPIED' | 'FULL') =>
+                      setFormData({ ...formData, status: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="EMPTY">Trống</SelectItem>
+                      <SelectItem value="OCCUPIED">Đang dùng</SelectItem>
+                      <SelectItem value="FULL">Đầy</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                Hủy
+              </Button>
+              <Button type="submit">{isEditing ? 'Cập nhật' : 'Thêm'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc chắn muốn xóa kệ "{selectedShelf?.locationName}"? Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={handleDelete}>
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* View Books Dialog - Placeholder */}
+      {viewBooksDialogOpen && selectedShelf && (
+        <Dialog open={viewBooksDialogOpen} onOpenChange={setViewBooksDialogOpen}>
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Sách trên kệ: {selectedShelf.locationName}</DialogTitle>
+            </DialogHeader>
+            <DialogContent>
+              {/* List shelfBooks here */}
+              <p>Shelf books placeholder</p>
+            </DialogContent>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Add Book Dialog - Placeholder */}
+      {addBookDialogOpen && selectedShelf && (
+        <Dialog open={addBookDialogOpen} onOpenChange={setAddBookDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Thêm sách vào kệ: {selectedShelf.locationName}</DialogTitle>
+            </DialogHeader>
+            <DialogContent>
+              {/* Select book and add */}
+              <Button onClick={handleAddBookToShelf}>Thêm sách</Button>
+            </DialogContent>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
-};
+}

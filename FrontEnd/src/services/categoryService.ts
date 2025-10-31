@@ -1,20 +1,20 @@
 import apiClient from './apiClient';
 import { CreateCategoryRequest, UpdateCategoryRequest } from '@/types/typeRequest';
-import { CategoryResponse } from '@/types/typeEntity';
+import { Category } from '@/types/typeEntity';
 import { ApiResponse, BooleanResponse } from '@/types/apiResponse';
 
-const getAllCategories = async (): Promise<CategoryResponse[]> => {
-  const response: ApiResponse<CategoryResponse[]> = await apiClient.get('/Category');
+const getAllCategories = async (): Promise<Category[]> => {
+  const response: ApiResponse<Category[]> = await apiClient.get('/Category');
   return response.data!;
 };
 
-const getCategoryById = async (id: number): Promise<CategoryResponse> => {
-  const response: ApiResponse<CategoryResponse> = await apiClient.get(`/Category/${id}`);
+const getCategoryById = async (id: number): Promise<Category> => {
+  const response: ApiResponse<Category> = await apiClient.get(`/Category/${id}`);
   return response.data!;
 };
 
-const createCategory = async (data: CreateCategoryRequest): Promise<CategoryResponse> => {
-  const response: ApiResponse<CategoryResponse> = await apiClient.post('/Category', data);
+const createCategory = async (data: CreateCategoryRequest): Promise<Category> => {
+  const response: ApiResponse<Category> = await apiClient.post('/Category', data);
   return response.data!;
 };
 

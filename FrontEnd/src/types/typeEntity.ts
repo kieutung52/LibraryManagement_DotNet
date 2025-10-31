@@ -1,181 +1,154 @@
-// ======================================================
-// ENUMS (Dựa trên DTO/enum_data/)
-// ======================================================
-
-// Dựa trên DTO/enum_data/AccountStatus.cs [cite: 100]
+// Dựa trên DTO/enum_data/AccountStatus.cs
 export enum AccountStatus {
-  ACTIVE,
-  SUSPENDED,
-  BANNED,
+  ACTIVE = "ACTIVE",
+  SUSPENDED = "SUSPENDED",
+  BANNED = "BANNED",
 }
 
 // Dựa trên DTO/enum_data/BorrowingDetailStatus.cs
 export enum BorrowingDetailStatus {
-  PENDING,
-  BORROWING,
-  RETURNED,
-  OVERDUE,
-  LOST,
+  PENDING = "PENDING",
+  BORROWING = "BORROWING",
+  RETURNED = "RETURNED",
+  OVERDUE = "OVERDUE",
+  LOST = "LOST",
 }
 
-// Dựa trên DTO/enum_data/BorrowingStatus.cs [cite: 98]
+// Dựa trên DTO/enum_data/BorrowingStatus.cs
 export enum BorrowingStatus {
-  PENDING,
-  APPROVED,
-  REJECTED,
-  COMPLETED,
+  PENDING = "PENDING",
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+  OVERDUE = "OVERDUE",
+  COMPLETED = "COMPLETED",
 }
 
-// Dựa trên DTO/enum_data/ShelfStatus.cs [cite: 97]
+// Dựa trên DTO/enum_data/ShelfStatus.cs
 export enum ShelfStatus {
-  EMPTY,
-  OCCUPIED,
-  FULL,
+  EMPTY = "EMPTY",
+  OCCUPIED = "OCCUPIED",
+  FULL = "FULL",
 }
 
-// Dựa trên DTO/enum_data/StaffPosition.cs [cite: 99]
+// Dựa trên DTO/enum_data/StaffPosition.cs
 export enum StaffPosition {
-  LIBRARIAN,
-  DIRECTOR,
+  LIBRARIAN = "LIBRARIAN",
+  DIRECTOR = "DIRECTOR",
 }
 
-// ======================================================
-// ENTITIES (Dựa trên DTO/response/)
-// ======================================================
-
-// Dựa trên DTO/response/users/AdminData.cs [cite: 74]
+// Dựa trên DTO/response/users/AdminData.cs
 export interface AdminData {
-  staffCode: string; // Guid trong C# được map sang string
-  position: string; // Backend trả về string [cite: 74]
+  staffCode: string; 
+  position: string; 
 }
 
-// Dựa trên DTO/response/users/UserData.cs [cite: 75-77]
+// Dựa trên DTO/response/users/UserData.cs
 export interface UserData {
-  limitRenew?: number | null;
-  countRenew?: number | null;
-  limitBorrow?: number | null;
-  countBorrow?: number | null;
-  countViolations?: number | null;
+  limitRenew: number | 3;
+  countRenew: number | 0;
+  limitBorrow: number | 5;
+  countBorrow: number | 0;
+  countViolations: number | 0;
 }
 
-// Dựa trên DTO/response/users/UserResponse.cs [cite: 69-72]
-export interface UserResponse {
-  accountID: string; // Guid
-  role: string;
+// Dựa trên DTO/response/users/UserResponse.cs
+export interface User {
+  accountID: string; 
+  role: string; 
   email: string;
   fullName: string;
-  status: string; // Backend trả về string[cite: 71], có thể cần map sang AccountStatus enum
-  adminData?: AdminData | null;
-  userData?: UserData | null;
+  status: AccountStatus; 
+  adminData: AdminData | null;
+  userData: UserData | null;
+  createdAt: string;
 }
 
-// Dựa trên DTO/response/library/books/BookResponse.cs [cite: 78-83]
-export interface BookResponse {
+// Dựa trên DTO/response/library/books/BookResponse.cs
+// Đổi tên thành 'Book' để dùng chung cho toàn bộ FE
+export interface Book {
   bookID: number;
   isbn: string;
   title: string;
   author: string;
-  categoryID?: number | null;
-  categoryName?: string | null;
-  publicationYear?: number | null;
+  categoryID: number;
+  categoryName: string;
+  publicationYear: number;
   totalQuantity: number;
   availableQuantity: number;
+  description: string;
+  publisher: string;
+  coverImage: string;
+  category: Category; 
 }
 
-// Dựa trên DTO/response/library/category/CategoryResponse.cs [cite: 84, 85]
-export interface CategoryResponse {
+// Dựa trên DTO/response/library/category/CategoryResponse.cs
+export interface Category {
   categoryID: number;
   name: string;
   description?: string | null;
+  // Thêm createdAt từ UI type cũ nếu cần, giả sử API có trả về
+  createdAt?: string;
 }
 
-// Dựa trên DTO/response/library/shelf/ShelfResponse.cs [cite: 86-88]
-export interface ShelfResponse {
+// Dựa trên DTO/response/library/shelf/ShelfResponse.cs
+export interface ShelfLocation {
   shelfID: number;
   locationName: string;
   description?: string | null;
-  status: ShelfStatus; // Backend trả về enum [cite: 87]
+  status: ShelfStatus; 
   capacity: number;
+  currentBooks?: number; 
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Dựa trên DTO/response/borrowing/BorrowingDetailResponse.cs [cite: 64-68]
+// Dựa trên DTO/response/borrowing/BorrowingDetailResponse.cs
 export interface BorrowingDetailResponse {
   borrowingDetailID: number;
   bookID: number;
   bookTitle: string;
   quantityBook: number;
-  dueDate: string; // DateTime trong C# được map sang string
-  returnDate?: string | null; // DateTime?
-  status: BorrowingDetailStatus; // Backend trả về enum [cite: 68]
+  dueDate: string; 
+  returnDate?: string | null; 
+  status: BorrowingDetailStatus; 
 }
 
-// Dựa trên DTO/response/borrowing/BorrowingResponse.cs [cite: 60-63]
+// Dựa trên DTO/response/borrowing/BorrowingResponse.cs
 export interface BorrowingResponse {
   borrowingID: number;
-  accountID: string; // Guid
-  staffID?: string | null; // Guid?
-  borrowDate: string; // DateTime
-  status: BorrowingStatus; // Backend trả về enum [cite: 63]
+  accountID: string; 
+  staffID?: string | null; 
+  borrowDate: string; 
+  status: BorrowingStatus; 
   details: BorrowingDetailResponse[];
 }
 
-// Dựa trên models/DataAnalyticsDaily.cs [cite: 56-59] (được trả về từ AdminController [cite: 158])
+// Dựa trên models/DataAnalyticsDaily.cs
 export interface DataAnalyticsDaily {
   dataAnalyticsID: number;
-  reportDate: string; // DateTime
+  reportDate: string; 
   countBorrowings: number;
   countUsersViolations: number;
   countUsersVisited: number;
   countUserBack: number;
   countBorrowingsToExpire: number;
   countBorrowingsRequestPending: number;
-  // Các trường này từ BaseEntity [cite: 43]
-  createdAt: string; 
+  createdAt: string;
   updatedAt: string;
 }
 
-export interface User {
-  accountId: string;
-  fullName: string;
-  email: string;
-  role: 'ADMIN' | 'USER';
-  status: 'ACTIVE' | 'INACTIVE';
-  limitBorrow: number;
-  limitRenew: number;
-  countViolations: number;
-  createdAt: string;
-}
+// ======================================================
+// ADDITIONAL FRONTEND ENTITIES (Không bị trùng lặp)
+// ======================================================
 
-export interface Category {
-  categoryId: string;
-  name: string;
-  description: string;
-  createdAt: string;
-}
-
+// BookCopy cho UI
 export interface BookCopy {
   copyId: string;
   barcode: string;
   status: 'AVAILABLE' | 'BORROWED' | 'DAMAGED';
 }
 
-export interface Book {
-  bookId: string;
-  title: string;
-  author: string;
-  year: number;
-  isbn: string;
-  category: Category;
-  categoryId: string;
-  availableCopies: number;
-  totalCopies: number;
-  copies: BookCopy[];
-  description: string;
-  publishedYear: number;
-  publisher: string;
-  coverImage: string;
-}
-
+// BorrowingSlip cho UI (Đã được chuẩn hóa)
 export interface BorrowingSlip {
   slipId: string;
   user: User;
@@ -186,9 +159,10 @@ export interface BorrowingSlip {
   borrowDate: string;
   dueDate: string;
   returnDate?: string;
-  status: 'PENDING' | 'APPROVED' | 'RETURNED' | 'OVERDUE';
+  status: BorrowingStatus | BorrowingDetailStatus | string;
 }
 
+// BorrowingHistory cho UI
 export interface BorrowingHistory {
   slipId: string;
   bookTitle: string;
@@ -196,9 +170,10 @@ export interface BorrowingHistory {
   borrowDate: string;
   dueDate: string;
   returnDate?: string;
-  status: 'PENDING' | 'APPROVED' | 'RETURNED' | 'OVERDUE';
+  status: BorrowingStatus | BorrowingDetailStatus | string;
 }
 
+// DashboardSummary cho UI
 export interface DashboardSummary {
   pendingRequests: number;
   borrowedToday: number;
@@ -206,33 +181,25 @@ export interface DashboardSummary {
   activeUsers: number;
 }
 
+// WeeklyStats cho UI
 export interface WeeklyStats {
   week: string;
   borrowings: number;
   violations: number;
 }
 
+// AuthResponse cho UI
 export interface AuthResponse {
   user: User;
   token?: string;
 }
 
-export interface ShelfLocation {
-  shelfLocationId: string;
-  locationName: string;
-  description: string;
-  status: 'EMPTY' | 'OCCUPIED' | 'FULL';
-  capacity: number;
-  currentBooks: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
+// BookLocation cho UI
 export interface BookLocation {
   bookLocationId: string;
-  bookId: string;
+  bookId: string; 
   book: Book;
-  shelfLocationId: string;
+  shelfLocationId: string; 
   shelfLocation: ShelfLocation;
   createdAt: string;
 }
