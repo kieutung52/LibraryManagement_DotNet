@@ -99,8 +99,13 @@ export function AdminShelfLocations() {
   };
 
   const loadShelfBooks = async (shelfId: number) => {
-    
-    setShelfBooks([]);
+    try {
+      const books = await shelfService.getBooksByShelf(shelfId);
+      setShelfBooks(books);
+    } catch (error) {
+      toast.error('Không thể tải danh sách sách trên kệ');
+      setShelfBooks([]);
+    }
   };
 
   const loadAvailableBooks = async () => {
@@ -225,40 +230,48 @@ export function AdminShelfLocations() {
   };
 
   const handleAddBookToShelf = async () => {
-    if (!selectedShelf || !selectedBookId) {
-      toast.error('Vui lòng chọn sách');
-      return;
-    }
+  if (!selectedShelf || !selectedBookId) {
+    toast.error('Vui lòng chọn sách');
+    return;
+  }
 
-    try {
-      await shelfService.addBookToShelf({
-        bookID: parseInt(selectedBookId),
-        shelfID: selectedShelf.shelfID
-      });
-      toast.success('Thêm sách vào kệ thành công');
-      setAddBookDialogOpen(false);
-      setSelectedBookId('');
-      loadShelves();
-      if (selectedShelf) {
-        loadShelfBooks(selectedShelf.shelfID);
-      }
-    } catch (error) {
-      toast.error((error as Error).message || 'Không thể thêm sách vào kệ');
-    }
-  };
+  try {
+    await shelfService.addBookToShelf({
+      bookID: Number.parseInt(selectedBookId, 10),
+      shelfID: selectedShelf.shelfID
+    });
 
-  const handleRemoveBookFromShelf = async (bookLocationId: string) => {
-    
-    try {
-      toast.success('Xóa sách khỏi kệ thành công');
-      if (selectedShelf) {
-        loadShelves();
-        loadShelfBooks(selectedShelf.shelfID);
-      }
-    } catch (error) {
-      toast.error((error as Error).message || 'Không thể xóa sách khỏi kệ');
-    }
-  };
+    toast.success('Thêm sách vào kệ thành công');
+    setAddBookDialogOpen(false);
+    setSelectedBookId('');
+
+    // Đồng bộ lại toàn bộ danh sách kệ
+    await loadShelves();
+    // Tải lại danh sách sách trên kệ
+    await loadShelfBooks(selectedShelf.shelfID);
+
+  } catch (error) {
+    toast.error((error as Error).message || 'Không thể thêm sách vào kệ');
+  }
+};
+
+  const handleRemoveBookFromShelf = async (bookLocationId: number) => {
+  if (!selectedShelf) return;
+
+  try {
+    await shelfService.removeBookFromShelf(bookLocationId);
+
+    toast.success('Xóa sách khỏi kệ thành công');
+
+    // Đồng bộ lại toàn bộ danh sách kệ
+    await loadShelves();
+    // Tải lại danh sách sách trên kệ
+    await loadShelfBooks(selectedShelf.shelfID);
+
+  } catch (error) {
+    toast.error((error as Error).message || 'Không thể xóa sách khỏi kệ');
+  }
+};
 
   const getStatusBadge = (status: ShelfStatus) => {
     switch (status) {
@@ -430,6 +443,17 @@ export function AdminShelfLocations() {
                             <BookOpen className="w-4 h-4" />
                           </Button>
                           <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedShelf(shelf);
+                              handleOpenAddBookDialog();
+                            }}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Thêm
+                          </Button>
+                          <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleOpenDialog(shelf)}
@@ -581,11 +605,52 @@ export function AdminShelfLocations() {
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>Sách trên kệ: {selectedShelf.locationName}</DialogTitle>
+              <DialogDescription>
+                Tổng: {shelfBooks.length} / {selectedShelf.capacity} sách
+              </DialogDescription>
             </DialogHeader>
-            <DialogContent>
-              {/* List shelfBooks here */}
-              <p>Shelf books placeholder</p>
-            </DialogContent>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tên sách</TableHead>
+                    <TableHead>Tác giả</TableHead>
+                    <TableHead>ISBN</TableHead>
+                    <TableHead>Danh mục</TableHead>
+                    <TableHead className="text-right">Thao tác</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {shelfBooks.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        Kệ trống
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    shelfBooks.map((book) => (
+                      <TableRow key={book.bookLocationID}>
+                        <TableCell className="font-medium">{book.title}</TableCell>
+                        <TableCell>{book.author}</TableCell>
+                        <TableCell>{book.isbn}</TableCell>
+                        <TableCell>{book.categoryName}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleRemoveBookFromShelf(book.bookLocationID)}
+                            className="text-black"
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Lấy ra
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </DialogContent>
         </Dialog>
       )}

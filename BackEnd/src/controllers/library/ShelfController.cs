@@ -64,4 +64,19 @@ public class ShelfController : ControllerBase
         if (!result.Success) return BadRequest(ApiResponse<AddBookToShelfResponse>.ErrorResponse(result.Message));
         return Ok(ApiResponse<AddBookToShelfResponse>.SuccessResponse(result, result.Message));
     }
+
+    [HttpGet("{shelfId}/books")]
+    public async Task<IActionResult> GetBooksByShelf(int shelfId)
+    {
+        var books = await _shelfService.GetBooksByShelfAsync(shelfId);
+        return Ok(ApiResponse<object>.SuccessResponse(books));
+    }
+
+    [HttpDelete("books/{bookLocationId}")]
+    public async Task<IActionResult> RemoveBookFromShelf(int bookLocationId)
+    {
+        var result = await _shelfService.RemoveBookFromShelfAsync(bookLocationId);
+        if (!result.Success) return BadRequest(ApiResponse<RemoveBookFromShelfResponse>.ErrorResponse(result.Message));
+        return Ok(ApiResponse<RemoveBookFromShelfResponse>.SuccessResponse(result, result.Message));
+    }
 }

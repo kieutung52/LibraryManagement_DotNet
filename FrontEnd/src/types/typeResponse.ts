@@ -11,3 +11,9 @@ export interface AddBookToShelfResponse {
   success: boolean;
   message: string;
 }
+
+// Dựa trên DTO/response/library/shelf/RemoveBookFromShelfResponse.cs
+export interface RemoveBookFromShelfResponse {
+  success: boolean;
+  message: string;
+}

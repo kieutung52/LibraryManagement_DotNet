@@ -4,9 +4,9 @@ import {
   UpdateShelfRequest,
   AddBookToShelfRequest,
 } from '@/types/typeRequest';
-import { ShelfLocation } from '@/types/typeEntity';
+import { ShelfLocation, BookOnShelf } from '@/types/typeEntity';
 import { ApiResponse, BooleanResponse } from '@/types/apiResponse';
-import { AddBookToShelfResponse } from '@/types/typeResponse';
+import { AddBookToShelfResponse, RemoveBookFromShelfResponse } from '@/types/typeResponse';
 
 const getAllShelves = async (): Promise<ShelfLocation[]> => {
   const response: ApiResponse<ShelfLocation[]> = await apiClient.get('/Shelf');
@@ -38,6 +38,16 @@ const addBookToShelf = async (data: AddBookToShelfRequest): Promise<AddBookToShe
   return response.data!;
 };
 
+const getBooksByShelf = async (shelfId: number): Promise<BookOnShelf[]> => {
+  const response: ApiResponse<BookOnShelf[]> = await apiClient.get(`/Shelf/${shelfId}/books`);
+  return response.data!;
+};
+
+const removeBookFromShelf = async (bookLocationId: number): Promise<RemoveBookFromShelfResponse> => {
+  const response: ApiResponse<RemoveBookFromShelfResponse> = await apiClient.delete(`/Shelf/books/${bookLocationId}`);
+  return response.data!;
+};
+
 export const shelfService = {
   getAllShelves,
   getShelfById,
@@ -45,4 +55,6 @@ export const shelfService = {
   updateShelf,
   deleteShelf,
   addBookToShelf,
+  getBooksByShelf,
+  removeBookFromShelf,
 };

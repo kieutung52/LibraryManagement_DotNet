@@ -88,6 +88,19 @@ export interface Category {
   createdAt?: string;
 }
 
+// Dựa trên DTO/response/library/shelf/BookOnShelfResponse.cs
+export interface BookOnShelf {
+  bookLocationID: number;
+  bookID: number;
+  title: string;
+  isbn: string;
+  author: string;
+  categoryName: string;
+  publicationYear: number;
+  publisher: string;
+  description: string;
+}
+
 // Dựa trên DTO/response/library/shelf/ShelfResponse.cs
 export interface ShelfLocation {
   shelfID: number;
